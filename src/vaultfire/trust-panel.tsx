@@ -83,22 +83,37 @@ export interface TrustPanelProps {
  * identity registration, chain, agent address, and optional VNS name
  * — all colour-coded for quick visual parsing.
  *
- * When the RPC endpoint is unreachable (rpcReachable === false), the
- * panel renders a clear warning instead of crashing.
+ * When demo mode is active (`trust.demoMode === true`) the panel
+ * renders a prominent magenta `[ DEMO MODE ]` banner at the top and
+ * bottom so the result is never mistaken for real on-chain data.
+ *
+ * When the RPC endpoint is unreachable (`trust.rpcReachable === false`)
+ * the panel renders a yellow warning banner instead of crashing.
  */
 export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
   const bond = statusIcon(trust.isBonded);
   const identity = statusIcon(trust.erc8004Registered);
   const gc = gradeColor(trust.trustGrade);
+  // Demo mode uses magenta border to visually distinguish from real data
+  const borderColor = trust.demoMode ? 'magenta' : gc;
 
   return (
     <Box
       flexDirection="column"
       borderStyle="double"
-      borderColor={gc}
+      borderColor={borderColor}
       paddingX={2}
       paddingY={1}
     >
+      {/* ── Demo Mode Banner (top) ─────────────────────────────── */}
+      {trust.demoMode && (
+        <Box justifyContent="center" marginBottom={1}>
+          <Text bold color="magenta" inverse>
+            {' \u2605 DEMO MODE \u2605 \u2014 This is NOT real on-chain data '}
+          </Text>
+        </Box>
+      )}
+
       {/* ── Header ─────────────────────────────────────────────── */}
       <Box justifyContent="center" marginBottom={1}>
         <Text bold color={gc}>
@@ -120,6 +135,11 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
         <Text bold color={gc}>
           {trust.trustGrade}
         </Text>
+        {trust.demoMode && (
+          <Text color="magenta" dimColor>
+            {' '}(demo)
+          </Text>
+        )}
       </FieldRow>
 
       {/* ── Reputation Score ───────────────────────────────────── */}
@@ -160,8 +180,17 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
         </FieldRow>
       )}
 
+      {/* ── Demo Mode Banner (bottom) ──────────────────────────── */}
+      {trust.demoMode && (
+        <Box justifyContent="center" marginTop={1}>
+          <Text color="magenta" dimColor>
+            Demo mode \u2014 set demoMode: false in vaultfire.config.json for live on-chain data
+          </Text>
+        </Box>
+      )}
+
       {/* ── Footer ─────────────────────────────────────────────── */}
-      <Box justifyContent="center" marginTop={1}>
+      <Box justifyContent="center" marginTop={trust.demoMode ? 0 : 1}>
         <Text dimColor italic>
           Powered by Vaultfire Protocol {'\u2014'} theloopbreaker.com
         </Text>

@@ -19,7 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import React from 'react';
 import { render } from 'ink';
-import { checkAgentTrust, formatTrustSummary } from './trust-client.js';
+import { checkAgentTrust, buildDemoResult, formatTrustSummary } from './trust-client.js';
 import { TrustPanel } from './trust-panel.js';
 import type { VaultfireConfig, TrustResult } from './types.js';
 
@@ -34,7 +34,23 @@ const DEFAULT_CONFIG: VaultfireConfig = {
   chain: 'base',
   blockOnFailure: false,
   showOnStartup: true,
+  demoMode: false,
 };
+
+/* ------------------------------------------------------------------ */
+/*  CLI flag detection                                                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Returns `true` when the `--vaultfire-demo` flag is present in the
+ * process arguments.  This allows demo mode to be activated without
+ * editing the config file, e.g.:
+ *
+ *   claude --vaultfire-demo
+ */
+function isDemoFlagSet(): boolean {
+  return process.argv.includes('--vaultfire-demo');
+}
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -74,11 +90,15 @@ function loadConfig(): VaultfireConfig {
  * Initialise the Vaultfire plugin.
  *
  * 1. Reads `vaultfire.config.json` (if present).
- * 2. Calls {@link checkAgentTrust} with the configured address.
+ * 2. Checks for `--vaultfire-demo` CLI flag or `demoMode: true` in config.
+ *    - If demo mode is active, returns a pre-filled high-trust profile
+ *      without making any on-chain calls.  The panel clearly labels
+ *      the result as `[ DEMO MODE ]`.
+ * 3. Otherwise calls {@link checkAgentTrust} with the configured address.
  *    - Retries up to 3 times with exponential backoff on failure.
  *    - Falls back to "Unverified" if all retries are exhausted.
- * 3. Renders the {@link TrustPanel} in the terminal (Ink).
- * 4. If `blockOnFailure` is enabled and the grade is **F** (and the
+ * 4. Renders the {@link TrustPanel} in the terminal (Ink).
+ * 5. If `blockOnFailure` is enabled and the grade is **F** (and the
  *    RPC was actually reachable — i.e. a real F, not a fallback),
  *    throws an error to halt startup.
  *
@@ -106,11 +126,24 @@ export async function initVaultfirePlugin(): Promise<TrustResult> {
       verificationUrl: '',
       rpcReachable: false,
       errorMessage: 'No agentAddress configured.',
+      demoMode: false,
     };
   }
 
-  // Perform the on-chain trust verification (with retry + fallback)
-  const trust = await checkAgentTrust(config.agentAddress, config.chain);
+  // Check for demo mode (CLI flag takes precedence over config file)
+  const demoActive = isDemoFlagSet() || config.demoMode;
+
+  if (demoActive) {
+    console.log(
+      '[vaultfire] Demo mode activated via ' +
+        (isDemoFlagSet() ? '--vaultfire-demo flag' : 'vaultfire.config.json'),
+    );
+  }
+
+  // Perform the on-chain trust verification (or return demo profile)
+  const trust = demoActive
+    ? buildDemoResult(config.agentAddress, config.chain)
+    : await checkAgentTrust(config.agentAddress, config.chain);
 
   // Render the Ink-based trust panel in the terminal
   if (config.showOnStartup) {
@@ -149,10 +182,17 @@ export function generateHookOutput(trust: TrustResult): string {
     : '\n\nNOTE: The Vaultfire RPC endpoint was unreachable. Trust data shown is a fallback. ' +
       'Claude Code is operating normally but without verified trust status.';
 
+  const demoNote = trust.demoMode
+    ? '\n\nNOTE: This session is running in DEMO MODE. The trust data shown is pre-filled ' +
+      'and does NOT reflect real on-chain verification. Set demoMode: false in ' +
+      'vaultfire.config.json to enable live trust verification.'
+    : '';
+
   const context =
     `This Claude Code session is running under Vaultfire KYA (Know Your Agent) verification.\n\n` +
     summary +
     rpcNote +
+    demoNote +
     `\n\nAll actions in this session are subject to Vaultfire Protocol accountability. ` +
     `Trust verification powered by theloopbreaker.com.`;
 

@@ -70,6 +70,44 @@ function buildFallbackResult(
     verificationUrl: '',
     rpcReachable: false,
     errorMessage: `Trust Unverified — RPC unreachable (${message})`,
+    demoMode: false,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Demo mode                                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Build a pre-filled high-trust demo result.
+ *
+ * This is returned when `demoMode` is enabled in the config (or via the
+ * `--vaultfire-demo` CLI flag).  The result is clearly marked with
+ * `demoMode: true` so the trust panel can display a `[ DEMO MODE ]`
+ * label — ensuring users are never misled about the data source.
+ *
+ * @param address - The configured agent address (used for display only).
+ * @param chain   - The configured chain (used for display only).
+ * @returns A {@link TrustResult} representing a fully bonded, A-grade agent.
+ */
+export function buildDemoResult(
+  address: string,
+  chain: SupportedChain = 'base',
+): TrustResult {
+  console.log('[vaultfire] Demo mode active — using pre-filled high-trust profile.');
+  return {
+    trustGrade: 'A',
+    reputationScore: 95,
+    reputationTier: 'platinum',
+    isBonded: true,
+    erc8004Registered: true,
+    chain,
+    address: address || '0xDEMO000000000000000000000000000000000000',
+    vnsName: 'demo.agent.vaultfire',
+    verificationUrl: 'https://theloopbreaker.com/demo',
+    rpcReachable: true,
+    errorMessage: null,
+    demoMode: true,
   };
 }
 
@@ -113,6 +151,7 @@ export async function checkAgentTrust(
         verificationUrl: trust.verificationUrl ?? '',
         rpcReachable: true,
         errorMessage: null,
+        demoMode: false,
       };
     } catch (err: unknown) {
       lastError = err;
@@ -146,10 +185,15 @@ export function formatTrustSummary(trust: TrustResult): string {
   const chainLabels: Record<string, string> = { base: 'Base', avalanche: 'Avalanche', ethereum: 'Ethereum' };
   const chainLabel = chainLabels[trust.chain] ?? trust.chain;
 
+  const demoTag = trust.demoMode ? '  [ DEMO MODE — not real on-chain data ]' : '';
+
   const lines = [
     '',
-    '\u26A1 VAULTFIRE TRUST VERIFICATION \u26A1',
+    trust.demoMode
+      ? '\u26A1 VAULTFIRE TRUST VERIFICATION \u26A1  [ DEMO MODE ]'
+      : '\u26A1 VAULTFIRE TRUST VERIFICATION \u26A1',
     ''.padStart(40, '\u2500'),
+    demoTag,
     `  Trust Grade:        ${trust.trustGrade}`,
     `  Reputation Score:   ${trust.reputationScore} / 100  (${trust.reputationTier})`,
     `  Bond Status:        ${bondIcon}`,

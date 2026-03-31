@@ -42,6 +42,19 @@ Edit `vaultfire.config.json` to include your agent's on-chain address:
 - `chain`: The blockchain network to query (`"base"`, `"avalanche"`, or `"ethereum"`).
 - `blockOnFailure`: If `true`, Claude Code will refuse to start if the agent's trust grade is **F**.
 - `showOnStartup`: If `true`, the trust panel will be displayed in the terminal on startup.
+- `demoMode`: If `true`, skips live on-chain queries and displays a pre-filled high-trust demo profile.
+
+## Demo Mode
+
+To see what a fully bonded, highly reputable agent looks like without needing to interact with the blockchain, you can enable Demo Mode.
+
+You can activate it via the configuration file (`"demoMode": true`) or by passing a flag when starting Claude Code:
+
+```bash
+claude --vaultfire-demo
+```
+
+When Demo Mode is active, the trust panel will display a pre-filled **Grade A** profile with a prominent `[ DEMO MODE ]` label. This ensures transparency so that the demo profile is never mistaken for real on-chain data. To view real live data again, ensure `demoMode` is set to `false` in your config and omit the CLI flag.
 
 ## Vaultfire Links
 
