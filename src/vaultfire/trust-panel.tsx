@@ -5,6 +5,9 @@
  * trust verification panel inside the terminal.  Claude Code already
  * uses Ink for its terminal UI, so this integrates natively.
  *
+ * The panel gracefully handles the "Unverified" fallback state that
+ * occurs when the Vaultfire API / RPC endpoint is unreachable.
+ *
  * @module vaultfire/trust-panel
  */
 
@@ -79,6 +82,9 @@ export interface TrustPanelProps {
  * Displays trust grade, reputation score, bond status, ERC-8004
  * identity registration, chain, agent address, and optional VNS name
  * — all colour-coded for quick visual parsing.
+ *
+ * When the RPC endpoint is unreachable (rpcReachable === false), the
+ * panel renders a clear warning instead of crashing.
  */
 export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
   const bond = statusIcon(trust.isBonded);
@@ -99,6 +105,15 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
           {'\u26A1'} VAULTFIRE TRUST VERIFICATION {'\u26A1'}
         </Text>
       </Box>
+
+      {/* ── RPC Warning (shown only when unreachable) ──────────── */}
+      {!trust.rpcReachable && (
+        <Box marginBottom={1}>
+          <Text color="yellow" bold>
+            {'\u26A0'} {trust.errorMessage ?? 'Trust Unverified — RPC unreachable'}
+          </Text>
+        </Box>
+      )}
 
       {/* ── Trust Grade ────────────────────────────────────────── */}
       <FieldRow label="Trust Grade:">

@@ -5,6 +5,10 @@
  * via the Vaultfire SDK, renders the trust panel, and optionally blocks
  * execution when the agent fails verification.
  *
+ * The plugin is resilient to network failures: if the Vaultfire API
+ * cannot be reached, Claude Code continues to function normally with
+ * an "Unverified" trust status displayed in the panel.
+ *
  * This module is the main entry point for the Vaultfire integration
  * inside Claude Code — Vaultfire Edition.
  *
@@ -71,8 +75,12 @@ function loadConfig(): VaultfireConfig {
  *
  * 1. Reads `vaultfire.config.json` (if present).
  * 2. Calls {@link checkAgentTrust} with the configured address.
+ *    - Retries up to 3 times with exponential backoff on failure.
+ *    - Falls back to "Unverified" if all retries are exhausted.
  * 3. Renders the {@link TrustPanel} in the terminal (Ink).
- * 4. If `blockOnFailure` is enabled and the grade is **F**, throws.
+ * 4. If `blockOnFailure` is enabled and the grade is **F** (and the
+ *    RPC was actually reachable — i.e. a real F, not a fallback),
+ *    throws an error to halt startup.
  *
  * @returns The {@link TrustResult} for downstream consumers.
  */
@@ -87,7 +95,7 @@ export async function initVaultfirePlugin(): Promise<TrustResult> {
       '[vaultfire] Create a vaultfire.config.json to enable KYA verification.',
     );
     return {
-      trustGrade: 'F',
+      trustGrade: 'Unverified',
       reputationScore: 0,
       reputationTier: 'unverified',
       isBonded: false,
@@ -96,10 +104,12 @@ export async function initVaultfirePlugin(): Promise<TrustResult> {
       address: '',
       vnsName: null,
       verificationUrl: '',
+      rpcReachable: false,
+      errorMessage: 'No agentAddress configured.',
     };
   }
 
-  // Perform the on-chain trust verification
+  // Perform the on-chain trust verification (with retry + fallback)
   const trust = await checkAgentTrust(config.agentAddress, config.chain);
 
   // Render the Ink-based trust panel in the terminal
@@ -115,8 +125,10 @@ export async function initVaultfirePlugin(): Promise<TrustResult> {
     }
   }
 
-  // Block execution if trust verification fails
-  if (config.blockOnFailure && trust.trustGrade === 'F') {
+  // Block execution only when the RPC was reachable and the agent
+  // genuinely received an F grade.  If the RPC was unreachable we
+  // never block — the user should not be punished for network issues.
+  if (config.blockOnFailure && trust.trustGrade === 'F' && trust.rpcReachable) {
     throw new Error(
       `[vaultfire] Agent ${config.agentAddress} failed trust verification (grade: F). ` +
         'Execution blocked by blockOnFailure policy.',
@@ -132,9 +144,15 @@ export async function initVaultfirePlugin(): Promise<TrustResult> {
  */
 export function generateHookOutput(trust: TrustResult): string {
   const summary = formatTrustSummary(trust);
+  const rpcNote = trust.rpcReachable
+    ? ''
+    : '\n\nNOTE: The Vaultfire RPC endpoint was unreachable. Trust data shown is a fallback. ' +
+      'Claude Code is operating normally but without verified trust status.';
+
   const context =
     `This Claude Code session is running under Vaultfire KYA (Know Your Agent) verification.\n\n` +
     summary +
+    rpcNote +
     `\n\nAll actions in this session are subject to Vaultfire Protocol accountability. ` +
     `Trust verification powered by theloopbreaker.com.`;
 

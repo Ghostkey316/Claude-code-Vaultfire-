@@ -47,6 +47,19 @@ export interface TrustResult {
 
   /** URL to the full verification page on Vaultfire. */
   verificationUrl: string;
+
+  /**
+   * Whether the Vaultfire API / RPC endpoint was reachable.
+   * `true` when verification succeeded, `false` when all retries
+   * were exhausted and the fallback result was returned.
+   */
+  rpcReachable: boolean;
+
+  /**
+   * Human-readable error message when verification failed, or `null`
+   * when the check completed successfully.
+   */
+  errorMessage: string | null;
 }
 
 /** Configuration stored in vaultfire.config.json. */
