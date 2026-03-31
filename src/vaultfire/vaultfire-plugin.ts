@@ -134,14 +134,8 @@ export function generateHookOutput(trust: TrustResult): string {
   const summary = formatTrustSummary(trust);
   const context =
     `This Claude Code session is running under Vaultfire KYA (Know Your Agent) verification.\n\n` +
-    `Agent Trust Grade: ${trust.trustGrade}\n` +
-    `Reputation Score: ${trust.reputationScore}/100 (${trust.reputationTier})\n` +
-    `Bond Status: ${trust.isBonded ? 'Bonded' : 'Unbonded'}\n` +
-    `ERC-8004 Identity: ${trust.erc8004Registered ? 'Registered' : 'Unregistered'}\n` +
-    `Chain: ${trust.chain}\n` +
-    `Address: ${trust.address}\n` +
-    (trust.vnsName ? `VNS Name: ${trust.vnsName}\n` : '') +
-    `\nAll actions in this session are subject to Vaultfire Protocol accountability. ` +
+    summary +
+    `\n\nAll actions in this session are subject to Vaultfire Protocol accountability. ` +
     `Trust verification powered by theloopbreaker.com.`;
 
   return JSON.stringify({

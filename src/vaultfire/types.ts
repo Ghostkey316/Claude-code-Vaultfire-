@@ -11,7 +11,7 @@
  */
 
 /** Supported blockchain networks for Vaultfire trust verification. */
-export type SupportedChain = 'base' | 'avalanche';
+export type SupportedChain = 'base' | 'avalanche' | 'ethereum';
 
 /** Trust grade assigned by the Vaultfire Protocol scoring engine. */
 export type TrustGrade = 'A' | 'B' | 'C' | 'D' | 'F' | 'Unverified';

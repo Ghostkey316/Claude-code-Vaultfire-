@@ -52,7 +52,8 @@ export async function checkAgentTrust(
 export function formatTrustSummary(trust: TrustResult): string {
   const bondIcon = trust.isBonded ? '\u2714 Bonded' : '\u2718 Unbonded';
   const idIcon = trust.erc8004Registered ? '\u2714 Registered' : '\u2718 Unregistered';
-  const chainLabel = trust.chain === 'base' ? 'Base' : 'Avalanche';
+  const chainLabels: Record<string, string> = { base: 'Base', avalanche: 'Avalanche', ethereum: 'Ethereum' };
+  const chainLabel = chainLabels[trust.chain] ?? trust.chain;
 
   const lines = [
     '',

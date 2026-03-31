@@ -39,7 +39,7 @@ Edit `vaultfire.config.json` to include your agent's on-chain address:
 ```
 
 - `agentAddress`: The Ethereum/EVM address of the AI agent.
-- `chain`: The blockchain network to query (`"base"` or `"avalanche"`).
+- `chain`: The blockchain network to query (`"base"`, `"avalanche"`, or `"ethereum"`).
 - `blockOnFailure`: If `true`, Claude Code will refuse to start if the agent's trust grade is **F**.
 - `showOnStartup`: If `true`, the trust panel will be displayed in the terminal on startup.
 
