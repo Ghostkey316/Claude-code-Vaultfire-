@@ -1,0 +1,65 @@
+/**
+ * Vaultfire Protocol — Trust Verification Types
+ *
+ * Type definitions for Vaultfire KYA (Know Your Agent) trust data,
+ * used throughout the Claude Code — Vaultfire Edition integration.
+ *
+ * These types align with the @vaultfire/agent-sdk but provide a
+ * simplified surface for the Claude Code trust panel and plugin.
+ *
+ * @module vaultfire/types
+ */
+
+/** Supported blockchain networks for Vaultfire trust verification. */
+export type SupportedChain = 'base' | 'avalanche';
+
+/** Trust grade assigned by the Vaultfire Protocol scoring engine. */
+export type TrustGrade = 'A' | 'B' | 'C' | 'D' | 'F' | 'Unverified';
+
+/** Reputation tier derived from the numeric score. */
+export type ReputationTier = 'unverified' | 'bronze' | 'silver' | 'gold' | 'platinum';
+
+/** Simplified trust result consumed by the trust panel and plugin. */
+export interface TrustResult {
+  /** Letter grade representing overall trust level. */
+  trustGrade: TrustGrade;
+
+  /** Numeric reputation score from 0–100. */
+  reputationScore: number;
+
+  /** Reputation tier label. */
+  reputationTier: ReputationTier;
+
+  /** Whether the agent has posted an accountability bond. */
+  isBonded: boolean;
+
+  /** Whether the agent is registered under the ERC-8004 identity standard. */
+  erc8004Registered: boolean;
+
+  /** The blockchain network used for verification. */
+  chain: SupportedChain;
+
+  /** The on-chain address of the agent. */
+  address: string;
+
+  /** Optional VNS (Vaultfire Name Service) name. */
+  vnsName: string | null;
+
+  /** URL to the full verification page on Vaultfire. */
+  verificationUrl: string;
+}
+
+/** Configuration stored in vaultfire.config.json. */
+export interface VaultfireConfig {
+  /** The on-chain address of the agent to verify. */
+  agentAddress: string;
+
+  /** The blockchain network to query. */
+  chain: SupportedChain;
+
+  /** If true, block Claude Code startup when the trust grade is F. */
+  blockOnFailure: boolean;
+
+  /** If true, display the trust panel on every startup. */
+  showOnStartup: boolean;
+}

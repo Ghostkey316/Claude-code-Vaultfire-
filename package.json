@@ -1,0 +1,22 @@
+{
+  "name": "claude-code-vaultfire",
+  "version": "0.1.0",
+  "description": "Claude Code with Vaultfire Protocol KYA trust verification — Know Your Agent",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@vaultfire/agent-sdk": "^0.1.0",
+    "ink": "^4.0.0",
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.37",
+    "@types/react": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}

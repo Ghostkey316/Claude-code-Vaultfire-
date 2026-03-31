@@ -1,0 +1,6 @@
+{
+  "agentAddress": "0xYourAgentAddressHere",
+  "chain": "base",
+  "blockOnFailure": false,
+  "showOnStartup": true
+}

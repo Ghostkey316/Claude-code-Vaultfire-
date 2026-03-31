@@ -1,0 +1,9 @@
+{
+  "name": "vaultfire-trust",
+  "version": "0.1.0",
+  "description": "Vaultfire Protocol KYA (Know Your Agent) trust verification — on-chain identity, accountability bonds, and reputation scoring for AI coding agents",
+  "author": {
+    "name": "Ghostkey316 / Vaultfire Protocol",
+    "email": "support@vaultfire.io"
+  }
+}

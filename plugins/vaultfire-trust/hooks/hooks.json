@@ -1,0 +1,27 @@
+{
+  "description": "Vaultfire KYA trust verification hook — verifies agent trust on session start and monitors tool usage for accountability",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks-handlers/pre-tool-use.sh",
+            "timeout": 5
+          }
+        ],
+        "matcher": "Bash|Edit|Write|MultiEdit"
+      }
+    ]
+  }
+}

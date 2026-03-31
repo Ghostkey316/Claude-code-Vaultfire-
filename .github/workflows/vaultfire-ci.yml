@@ -1,0 +1,62 @@
+name: Vaultfire CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'plugins/vaultfire-trust/**'
+      - 'package.json'
+      - 'tsconfig.json'
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  vaultfire-build:
+    name: Vaultfire TypeScript Build & Secret Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: TypeScript type check
+      run: npx tsc --noEmit
+
+    - name: Secret Scanner — private keys
+      run: |
+        echo "Scanning for private key patterns..."
+        if grep -rE '0x[0-9a-fA-F]{64}' src/ plugins/vaultfire-trust/ 2>/dev/null; then
+          echo "ERROR: Potential private key found in source files!"
+          exit 1
+        fi
+        echo "PASS: No private keys found."
+
+    - name: Secret Scanner — GitHub tokens
+      run: |
+        echo "Scanning for GitHub tokens..."
+        if grep -rE 'ghp_[a-zA-Z0-9]{36}' src/ plugins/ *.json *.md 2>/dev/null; then
+          echo "ERROR: GitHub token found in files!"
+          exit 1
+        fi
+        echo "PASS: No GitHub tokens found."
+
+    - name: Verify Vaultfire plugin structure
+      run: |
+        echo "Verifying Vaultfire plugin structure..."
+        test -f plugins/vaultfire-trust/.claude-plugin/plugin.json && echo "OK: plugin.json"
+        test -f plugins/vaultfire-trust/hooks/hooks.json && echo "OK: hooks.json"
+        test -f plugins/vaultfire-trust/hooks-handlers/session-start.sh && echo "OK: session-start.sh"
+        test -f plugins/vaultfire-trust/hooks-handlers/pre-tool-use.sh && echo "OK: pre-tool-use.sh"
+        test -f src/vaultfire/trust-client.ts && echo "OK: trust-client.ts"
+        test -f src/vaultfire/trust-panel.tsx && echo "OK: trust-panel.tsx"
+        test -f src/vaultfire/vaultfire-plugin.ts && echo "OK: vaultfire-plugin.ts"
+        echo "All Vaultfire files verified."
