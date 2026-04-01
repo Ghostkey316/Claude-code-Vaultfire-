@@ -34,7 +34,8 @@ Edit `vaultfire.config.json` to include your agent's on-chain address:
   "agentAddress": "0xYourAgentAddressHere",
   "chain": "base",
   "blockOnFailure": false,
-  "showOnStartup": true
+  "showOnStartup": true,
+  "demoMode": false
 }
 ```
 
@@ -55,6 +56,23 @@ claude --vaultfire-demo
 ```
 
 When Demo Mode is active, the trust panel will display a pre-filled **Grade A** profile with a prominent `[ DEMO MODE ]` label. This ensures transparency so that the demo profile is never mistaken for real on-chain data. To view real live data again, ensure `demoMode` is set to `false` in your config and omit the CLI flag.
+
+## Vaultfire Source Files
+
+The Vaultfire integration lives in two places within this repository:
+
+| Path | Purpose |
+|---|---|
+| `src/vaultfire/types.ts` | TypeScript type definitions for trust data, config, and supported chains |
+| `src/vaultfire/trust-client.ts` | SDK wrapper with retry logic (3 attempts, exponential backoff) and graceful fallback |
+| `src/vaultfire/trust-panel.tsx` | Ink-based terminal UI component — renders the colour-coded trust panel |
+| `src/vaultfire/vaultfire-plugin.ts` | Plugin entry point — reads config, runs verification, renders panel, handles demo mode |
+| `src/vaultfire/index.ts` | Barrel export for the Vaultfire module |
+| `src/index.ts` | Main entry point for the Vaultfire Edition |
+| `plugins/vaultfire-trust/` | Claude Code plugin — SessionStart hook, PreToolUse hook, `/vaultfire-trust` command, agent, and skill |
+| `vaultfire.config.example.json` | Example configuration file |
+
+The `src/vaultfire/` TypeScript source uses the real `@vaultfire/agent-sdk` package to query live on-chain contracts. The `plugins/vaultfire-trust/` directory follows the official Claude Code plugin architecture with shell-based hook handlers that produce JSON output for the Claude Code runtime.
 
 ## Vaultfire Links
 
