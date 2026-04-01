@@ -10,12 +10,19 @@
  * After all retries are exhausted a graceful "Unverified" fallback is
  * returned, allowing the session to continue normally.
  *
+ * Partnership bond status is sourced from the AIPartnershipBondsV2
+ * contract via the Vaultfire API.  The `TrustProfile.isBonded` and
+ * `TrustProfile.bondPartner` fields reflect the on-chain
+ * AIPartnershipBondsV2 state on Base and Avalanche.  A confirmed
+ * partnership bond contributes +5 points to the effective reputation
+ * score used for grade calculation.
+ *
  * @module vaultfire/trust-client
  */
 
 import { createVaultfireSDK } from '@vaultfire/agent-sdk';
 import type { TrustProfile } from '@vaultfire/agent-sdk';
-import type { SupportedChain, TrustResult } from './types.js';
+import type { SupportedChain, TrustGrade, TrustResult } from './types.js';
 
 /* ------------------------------------------------------------------ */
 /*  Retry configuration                                                */
@@ -37,6 +44,29 @@ const BASE_DELAY_MS = 1_000;
  */
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Derive a trust grade from a numeric reputation score.
+ *
+ * The partnership bond bonus (+5) is already factored into `score`
+ * before this function is called, so the grade naturally improves
+ * when an AIPartnershipBondsV2 bond is active.
+ *
+ * | Score  | Grade |
+ * |--------|-------|
+ * | 90–100 | A     |
+ * | 75–89  | B     |
+ * | 55–74  | C     |
+ * | 30–54  | D     |
+ * |  0–29  | F     |
+ */
+function scoreToGrade(score: number): TrustGrade {
+  if (score >= 90) return 'A';
+  if (score >= 75) return 'B';
+  if (score >= 55) return 'C';
+  if (score >= 30) return 'D';
+  return 'F';
 }
 
 /**
@@ -64,6 +94,8 @@ function buildFallbackResult(
     reputationTier: 'unverified',
     isBonded: false,
     erc8004Registered: false,
+    partnershipBond: false,
+    bondPartner: null,
     chain,
     address,
     vnsName: null,
@@ -86,6 +118,9 @@ function buildFallbackResult(
  * `demoMode: true` so the trust panel can display a `[ DEMO MODE ]`
  * label — ensuring users are never misled about the data source.
  *
+ * The demo profile includes an active AIPartnershipBondsV2 partnership
+ * bond (`partnershipBond: true`) to showcase the full feature set.
+ *
  * @param address - The configured agent address (used for display only).
  * @param chain   - The configured chain (used for display only).
  * @returns A {@link TrustResult} representing a fully bonded, A-grade agent.
@@ -101,6 +136,8 @@ export function buildDemoResult(
     reputationTier: 'platinum',
     isBonded: true,
     erc8004Registered: true,
+    partnershipBond: true,
+    bondPartner: '0xVaultfire000000000000000000000000000000',
     chain,
     address: address || '0xDEMO000000000000000000000000000000000000',
     vnsName: 'demo.agent.vaultfire',
@@ -123,6 +160,11 @@ export function buildDemoResult(
  * attempt fails the function returns a graceful "Unverified" result
  * instead of throwing, so Claude Code continues to work normally.
  *
+ * Partnership bond status is sourced from the AIPartnershipBondsV2
+ * contract via `TrustProfile.isBonded` and `TrustProfile.bondPartner`.
+ * When a partnership bond is active the effective reputation score is
+ * boosted by +5 points, which may lift the agent's trust grade.
+ *
  * @param address - The on-chain address of the agent to verify.
  * @param chain   - The blockchain network to query (default: `"base"`).
  * @returns A promise that resolves to a {@link TrustResult}.
@@ -139,12 +181,44 @@ export async function checkAgentTrust(
     try {
       const trust: TrustProfile = await sdk.verifyTrust(address);
 
+      // AIPartnershipBondsV2 — the SDK surfaces the on-chain bond state
+      // through TrustProfile.isBonded and TrustProfile.bondPartner.
+      // A non-null bondPartner confirms an active AIPartnershipBondsV2
+      // partnership bond (as opposed to a solo accountability bond).
+      const partnershipBond: boolean =
+        (trust.isBonded ?? false) && trust.bondPartner != null;
+      const bondPartner: string | null = trust.bondPartner ?? null;
+
+      // Apply the partnership bond bonus (+5 pts) to the reputation score
+      // before recalculating the grade.  This ensures the grade reflects
+      // the full trust picture including the AIPartnershipBondsV2 state.
+      const baseScore = trust.reputationScore ?? 0;
+      const effectiveScore = partnershipBond
+        ? Math.min(100, baseScore + 5)
+        : baseScore;
+
+      // Use the API-provided grade if the score didn't change, otherwise
+      // recalculate to reflect the partnership bond bonus.
+      const trustGrade =
+        effectiveScore !== baseScore
+          ? scoreToGrade(effectiveScore)
+          : (trust.trustGrade ?? 'F');
+
+      if (partnershipBond && effectiveScore !== baseScore) {
+        console.log(
+          `[vaultfire] AIPartnershipBondsV2 bond active — score boosted ` +
+            `${baseScore} → ${effectiveScore}, grade: ${trustGrade}`,
+        );
+      }
+
       return {
-        trustGrade: trust.trustGrade ?? 'F',
-        reputationScore: trust.reputationScore ?? 0,
+        trustGrade,
+        reputationScore: effectiveScore,
         reputationTier: trust.reputationTier ?? 'unverified',
         isBonded: trust.isBonded ?? false,
         erc8004Registered: trust.isRegistered ?? false,
+        partnershipBond,
+        bondPartner,
         chain,
         address,
         vnsName: trust.vnsName ?? null,
@@ -182,6 +256,7 @@ export async function checkAgentTrust(
 export function formatTrustSummary(trust: TrustResult): string {
   const bondIcon = trust.isBonded ? '\u2714 Bonded' : '\u2718 Unbonded';
   const idIcon = trust.erc8004Registered ? '\u2714 Registered' : '\u2718 Unregistered';
+  const partnerIcon = trust.partnershipBond ? '\u2714 Active' : '\u2718 None';
   const chainLabels: Record<string, string> = { base: 'Base', avalanche: 'Avalanche', ethereum: 'Ethereum' };
   const chainLabel = chainLabels[trust.chain] ?? trust.chain;
 
@@ -197,6 +272,10 @@ export function formatTrustSummary(trust: TrustResult): string {
     `  Trust Grade:        ${trust.trustGrade}`,
     `  Reputation Score:   ${trust.reputationScore} / 100  (${trust.reputationTier})`,
     `  Bond Status:        ${bondIcon}`,
+    `  Partnership Bond:   ${partnerIcon}`,
+    trust.partnershipBond && trust.bondPartner
+      ? `  Bond Partner:       ${trust.bondPartner}`
+      : '',
     `  ERC-8004 Identity:  ${idIcon}`,
     `  Chain:              ${chainLabel}`,
     `  Agent:              ${trust.address}`,

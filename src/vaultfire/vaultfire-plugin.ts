@@ -120,6 +120,8 @@ export async function initVaultfirePlugin(): Promise<TrustResult> {
       reputationTier: 'unverified',
       isBonded: false,
       erc8004Registered: false,
+      partnershipBond: false,
+      bondPartner: null,
       chain: config.chain,
       address: '',
       vnsName: null,

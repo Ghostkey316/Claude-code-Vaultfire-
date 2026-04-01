@@ -79,9 +79,9 @@ export interface TrustPanelProps {
 /**
  * Renders the Vaultfire trust verification panel in the terminal.
  *
- * Displays trust grade, reputation score, bond status, ERC-8004
- * identity registration, chain, agent address, and optional VNS name
- * — all colour-coded for quick visual parsing.
+ * Displays trust grade, reputation score, bond status, AIPartnershipBondsV2
+ * partnership bond status, ERC-8004 identity registration, chain, agent
+ * address, and optional VNS name — all colour-coded for quick visual parsing.
  *
  * When demo mode is active (`trust.demoMode === true`) the panel
  * renders a prominent magenta `[ DEMO MODE ]` banner at the top and
@@ -92,6 +92,7 @@ export interface TrustPanelProps {
  */
 export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
   const bond = statusIcon(trust.isBonded);
+  const partnerBond = statusIcon(trust.partnershipBond);
   const identity = statusIcon(trust.erc8004Registered);
   const gc = gradeColor(trust.trustGrade);
   // Demo mode uses magenta border to visually distinguish from real data
@@ -155,6 +156,15 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
       <FieldRow label="Bond Status:">
         <Text color={bond.color}>{bond.symbol}</Text>
         <Text> {trust.isBonded ? 'Bonded' : 'Unbonded'}</Text>
+      </FieldRow>
+
+      {/* ── Partnership Bond (AIPartnershipBondsV2) ───────────── */}
+      <FieldRow label="Partnership Bond:">
+        <Text color={partnerBond.color}>{partnerBond.symbol}</Text>
+        <Text> {trust.partnershipBond ? 'Active' : 'None'}</Text>
+        {trust.partnershipBond && trust.bondPartner && (
+          <Text dimColor> ({trust.bondPartner.slice(0, 10)}…)</Text>
+        )}
       </FieldRow>
 
       {/* ── ERC-8004 Identity ──────────────────────────────────── */}
