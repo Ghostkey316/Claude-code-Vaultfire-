@@ -122,6 +122,7 @@ export async function initVaultfirePlugin(): Promise<TrustResult> {
       erc8004Registered: false,
       partnershipBond: false,
       bondPartner: null,
+      protocolCommitments: { antiSurveillance: false, privacyGuarantees: false, missionEnforcement: false },
       chain: config.chain,
       address: '',
       vnsName: null,

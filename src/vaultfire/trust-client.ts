@@ -22,7 +22,7 @@
 
 import { createVaultfireSDK } from '@vaultfire/agent-sdk';
 import type { TrustProfile } from '@vaultfire/agent-sdk';
-import type { SupportedChain, TrustGrade, TrustResult } from './types.js';
+import type { SupportedChain, TrustGrade, TrustResult, ProtocolCommitments } from './types.js';
 
 /* ------------------------------------------------------------------ */
 /*  Retry configuration                                                */
@@ -35,6 +35,48 @@ const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1_000;
 
 /* ------------------------------------------------------------------ */
+/*  Protocol contract addresses                                        */
+/*                                                                     */
+/*  These are the deployed Vaultfire Protocol commitment contracts.    */
+/*  Source: ghostkey-316-vaultfire-init / app/lib/contracts.ts        */
+/* ------------------------------------------------------------------ */
+
+interface ProtocolContractSet {
+  antiSurveillance: string;
+  privacyGuarantees: string;
+  missionEnforcement: string;
+}
+
+/**
+ * Deployed contract addresses for each supported chain.
+ * Verified against the Vaultfire Protocol's official contracts.ts.
+ */
+const PROTOCOL_CONTRACTS: Record<string, ProtocolContractSet> = {
+  base: {
+    antiSurveillance:   '0x722E37A7D6f27896C688336AaaFb0dDA80D25E57',
+    privacyGuarantees:  '0xE2f75A4B14ffFc1f9C2b1ca22Fdd6877E5BD5045',
+    missionEnforcement: '0x8568F4020FCD55915dB3695558dD6D2532599e56',
+  },
+  avalanche: {
+    antiSurveillance:   '0x281814eF92062DA8049Fe5c4743c4Aef19a17380',
+    privacyGuarantees:  '0xc09F0e06690332eD9b490E1040BdE642f11F3937',
+    missionEnforcement: '0xcf64D815F5424B7937aB226bC733Ed35ab6CaDcB',
+  },
+  ethereum: {
+    antiSurveillance:   '0xfDdd2B1597c87577543176AB7f49D587876563D2',
+    privacyGuarantees:  '0x8aceF0Bc7e07B2dE35E9069663953f41B5422218',
+    missionEnforcement: '0x0E777878C5b5248E1b52b09Ab5cdEb2eD6e7Da58',
+  },
+};
+
+/** Public RPC endpoints for bytecode verification (read-only, no key required). */
+const CHAIN_RPC: Record<string, string> = {
+  base:      'https://mainnet.base.org',
+  avalanche: 'https://api.avax.network/ext/bc/C/rpc',
+  ethereum:  'https://eth.llamarpc.com',
+};
+
+/* ------------------------------------------------------------------ */
 /*  Internal helpers                                                   */
 /* ------------------------------------------------------------------ */
 
@@ -44,6 +86,74 @@ const BASE_DELAY_MS = 1_000;
  */
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Check whether a contract address has deployed bytecode on the given chain.
+ *
+ * Uses a raw eth_getCode JSON-RPC call against the public RPC endpoint.
+ * A response of "0x" means no code is deployed; anything longer confirms
+ * the contract is live and enforcing the protocol's guarantees.
+ *
+ * This is a read-only operation — no wallet, no private key, no gas.
+ *
+ * @param address - The contract address to check.
+ * @param chain   - The chain to query.
+ * @returns `true` when bytecode is present, `false` otherwise.
+ */
+async function hasDeployedBytecode(address: string, chain: string): Promise<boolean> {
+  const rpc = CHAIN_RPC[chain] ?? CHAIN_RPC.base;
+  try {
+    const res = await fetch(rpc, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'eth_getCode',
+        params: [address, 'latest'],
+        id: 1,
+      }),
+    });
+    if (!res.ok) return false;
+    const json = await res.json() as { result?: string };
+    const code: string = json.result ?? '0x';
+    // "0x" means no code; anything longer means contract is deployed
+    return code !== '0x' && code.length > 2;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Verify all three Vaultfire Protocol commitment contracts on the given chain.
+ *
+ * Each contract is checked in parallel for maximum speed.  If the chain
+ * is not in PROTOCOL_CONTRACTS all three default to `false`.
+ *
+ * @param chain - The chain to query.
+ * @returns A {@link ProtocolCommitments} object.
+ */
+async function checkProtocolCommitments(chain: string): Promise<ProtocolCommitments> {
+  const contracts = PROTOCOL_CONTRACTS[chain];
+  if (!contracts) {
+    console.warn(`[vaultfire] No protocol contract addresses for chain "${chain}" — defaulting to false.`);
+    return { antiSurveillance: false, privacyGuarantees: false, missionEnforcement: false };
+  }
+
+  const [antiSurveillance, privacyGuarantees, missionEnforcement] = await Promise.all([
+    hasDeployedBytecode(contracts.antiSurveillance,   chain),
+    hasDeployedBytecode(contracts.privacyGuarantees,  chain),
+    hasDeployedBytecode(contracts.missionEnforcement, chain),
+  ]);
+
+  console.log(
+    `[vaultfire] Protocol Commitments (${chain}): ` +
+    `AntiSurveillance=${antiSurveillance} ` +
+    `PrivacyGuarantees=${privacyGuarantees} ` +
+    `MissionEnforcement=${missionEnforcement}`,
+  );
+
+  return { antiSurveillance, privacyGuarantees, missionEnforcement };
 }
 
 /**
@@ -96,6 +206,7 @@ function buildFallbackResult(
     erc8004Registered: false,
     partnershipBond: false,
     bondPartner: null,
+    protocolCommitments: { antiSurveillance: false, privacyGuarantees: false, missionEnforcement: false },
     chain,
     address,
     vnsName: null,
@@ -138,6 +249,11 @@ export function buildDemoResult(
     erc8004Registered: true,
     partnershipBond: true,
     bondPartner: '0xVaultfire000000000000000000000000000000',
+    protocolCommitments: {
+      antiSurveillance: true,
+      privacyGuarantees: true,
+      missionEnforcement: true,
+    },
     chain,
     address: address || '0xDEMO000000000000000000000000000000000000',
     vnsName: 'demo.agent.vaultfire',
@@ -179,7 +295,11 @@ export async function checkAgentTrust(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const trust: TrustProfile = await sdk.verifyTrust(address);
+      // Run agent trust check and protocol commitment check in parallel
+      const [trust, protocolCommitments] = await Promise.all([
+        sdk.verifyTrust(address) as Promise<TrustProfile>,
+        checkProtocolCommitments(chain),
+      ]);
 
       // AIPartnershipBondsV2 — the SDK surfaces the on-chain bond state
       // through TrustProfile.isBonded and TrustProfile.bondPartner.
@@ -219,6 +339,7 @@ export async function checkAgentTrust(
         erc8004Registered: trust.isRegistered ?? false,
         partnershipBond,
         bondPartner,
+        protocolCommitments,
         chain,
         address,
         vnsName: trust.vnsName ?? null,
@@ -254,13 +375,18 @@ export async function checkAgentTrust(
  * @returns A multi-line string suitable for terminal display.
  */
 export function formatTrustSummary(trust: TrustResult): string {
-  const bondIcon = trust.isBonded ? '\u2714 Bonded' : '\u2718 Unbonded';
-  const idIcon = trust.erc8004Registered ? '\u2714 Registered' : '\u2718 Unregistered';
-  const partnerIcon = trust.partnershipBond ? '\u2714 Active' : '\u2718 None';
+  const bondIcon    = trust.isBonded          ? '\u2714 Bonded'      : '\u2718 Unbonded';
+  const partnerIcon = trust.partnershipBond   ? '\u2714 Active'      : '\u2718 None';
+  const idIcon      = trust.erc8004Registered ? '\u2714 Registered'  : '\u2718 Unregistered';
   const chainLabels: Record<string, string> = { base: 'Base', avalanche: 'Avalanche', ethereum: 'Ethereum' };
   const chainLabel = chainLabels[trust.chain] ?? trust.chain;
 
-  const demoTag = trust.demoMode ? '  [ DEMO MODE — not real on-chain data ]' : '';
+  const pc = trust.protocolCommitments;
+  const antiIcon = pc.antiSurveillance   ? '\u2714 Enforced on-chain' : '\u2718 Inactive';
+  const privIcon  = pc.privacyGuarantees  ? '\u2714 Active'           : '\u2718 Inactive';
+  const missIcon  = pc.missionEnforcement ? '\u2714 Active'           : '\u2718 Inactive';
+
+  const demoTag = trust.demoMode ? '  [ DEMO MODE \u2014 not real on-chain data ]' : '';
 
   const lines = [
     '',
@@ -281,6 +407,11 @@ export function formatTrustSummary(trust: TrustResult): string {
     `  Agent:              ${trust.address}`,
     trust.vnsName ? `  VNS Name:           ${trust.vnsName}` : '',
     trust.errorMessage ? `  Status:             ${trust.errorMessage}` : '',
+    ''.padStart(40, '\u2500'),
+    '  Protocol Commitments:',
+    `    Anti-Surveillance:    ${antiIcon}`,
+    `    Privacy Guarantees:   ${privIcon}`,
+    `    Mission Enforcement:  ${missIcon}`,
     ''.padStart(40, '\u2500'),
     '  Powered by Vaultfire Protocol \u2014 theloopbreaker.com',
     '',

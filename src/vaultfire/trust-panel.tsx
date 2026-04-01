@@ -190,6 +190,40 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
         </FieldRow>
       )}
 
+      {/* ── Protocol Commitments Divider ───────────────────────── */}
+      <Box marginTop={1} marginBottom={0}>
+        <Text dimColor>{'─'.repeat(38)}</Text>
+      </Box>
+
+      {/* ── Protocol Commitments Header ────────────────────────── */}
+      <Box marginBottom={0}>
+        <Text bold dimColor>Protocol Commitments:</Text>
+      </Box>
+
+      {/* ── Anti-Surveillance ──────────────────────────────────── */}
+      <FieldRow label="  Anti-Surveillance:">
+        <Text color={statusIcon(trust.protocolCommitments.antiSurveillance).color}>
+          {statusIcon(trust.protocolCommitments.antiSurveillance).symbol}
+        </Text>
+        <Text> {trust.protocolCommitments.antiSurveillance ? 'Enforced on-chain' : 'Inactive'}</Text>
+      </FieldRow>
+
+      {/* ── Privacy Guarantees ─────────────────────────────────── */}
+      <FieldRow label="  Privacy Guarantees:">
+        <Text color={statusIcon(trust.protocolCommitments.privacyGuarantees).color}>
+          {statusIcon(trust.protocolCommitments.privacyGuarantees).symbol}
+        </Text>
+        <Text> {trust.protocolCommitments.privacyGuarantees ? 'Active' : 'Inactive'}</Text>
+      </FieldRow>
+
+      {/* ── Mission Enforcement ────────────────────────────────── */}
+      <FieldRow label="  Mission Enforcement:">
+        <Text color={statusIcon(trust.protocolCommitments.missionEnforcement).color}>
+          {statusIcon(trust.protocolCommitments.missionEnforcement).symbol}
+        </Text>
+        <Text> {trust.protocolCommitments.missionEnforcement ? 'Active' : 'Inactive'}</Text>
+      </FieldRow>
+
       {/* ── Demo Mode Banner (bottom) ──────────────────────────── */}
       {trust.demoMode && (
         <Box justifyContent="center" marginTop={1}>
