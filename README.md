@@ -4,6 +4,8 @@ Claude Code with Vaultfire's full trust layer baked in. The KYA (Know Your AI) s
 
 This repository contains the complete open-source Claude Code distribution, enhanced with the Vaultfire Protocol's on-chain trust verification engine. Every time the agent starts, its identity, accountability bonds, payment capabilities, and protocol-level privacy commitments are verified cryptographically.
 
+> **⚠️ Alpha Software** — Vaultfire Protocol is live on Base and Avalanche mainnet, but is currently in alpha. The smart contracts are deployed and functional, and the trust checks run against real on-chain data. However, the protocol is under active development: APIs may change, features are being added, and edge cases are still being addressed. This integration should not be used in production systems without a clear understanding of those risks. Use demo mode (`claude --vaultfire-demo`) to explore safely without requiring a configured agent address.
+
 ## The Trust Panel
 
 When you run Claude Code — Vaultfire Edition, the trust panel provides an immediate, verifiable readout of the agent's on-chain state:

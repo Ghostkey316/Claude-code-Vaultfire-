@@ -265,12 +265,23 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
         </Box>
       )}
 
-      {/* ── Footer ─────────────────────────────────────────────── */}
-      <Box justifyContent="center" marginTop={trust.demoMode ? 0 : 1}>
-        <Text dimColor italic>
-          Powered by Vaultfire Protocol {'\u2014'} theloopbreaker.com
-        </Text>
-      </Box>
+      {/* ── Alpha notice (live mode only) ──────────────────────── */}
+      {!trust.demoMode && (
+        <Box justifyContent="center" marginTop={1}>
+          <Text color="gray" dimColor>
+            Vaultfire Protocol {'\u00B7'} Alpha {'\u00B7'} theloopbreaker.com
+          </Text>
+        </Box>
+      )}
+
+      {/* ── Footer (demo mode only) ────────────────────────────── */}
+      {trust.demoMode && (
+        <Box justifyContent="center" marginTop={0}>
+          <Text dimColor italic>
+            Powered by Vaultfire Protocol {'\u2014'} theloopbreaker.com
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 };
