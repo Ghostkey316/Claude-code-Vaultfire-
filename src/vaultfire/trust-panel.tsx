@@ -156,6 +156,9 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
       <FieldRow label="Accountability Bond:">
         <Text color={bond.color}>{bond.symbol}</Text>
         <Text> {trust.isBonded ? 'Bonded' : 'Unbonded'}</Text>
+        {process.env['VAULTFIRE_AGENT_KEY'] && (
+          <Text color="green" dimColor> {"\u00B7"} bond creation enabled</Text>
+        )}
       </FieldRow>
 
       {/* ── Partnership Bond (AIPartnershipBondsV2) ───────────── */}
@@ -164,6 +167,9 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
         <Text> {trust.partnershipBond ? 'Active' : 'None'}</Text>
         {trust.partnershipBond && trust.bondPartner && (
           <Text dimColor> ({trust.bondPartner.slice(0, 10)}…)</Text>
+        )}
+        {process.env['VAULTFIRE_AGENT_KEY'] && (
+          <Text color="green" dimColor> {"\u00B7"} bonding enabled</Text>
         )}
       </FieldRow>
 

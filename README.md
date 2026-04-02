@@ -137,8 +137,35 @@ export VAULTFIRE_AGENT_KEY=<your-agent-private-key>
 This enables:
 - **x402 Payment Signing** — Full EIP-712 signed USDC payment authorisations via the `X402Client` class
 - **XMTP Messaging** — Send and receive encrypted messages on the decentralised XMTP network via the `XMTPClient` class
+- **Bond Creation** — Create accountability and partnership bonds on-chain via the `BondClient` class
 
-> **Security:** The private key is read from the environment variable only. It is never written to any file, never logged, never included in any output, and never transmitted. Only the derived public address is ever displayed. If the key is invalid or missing, both features gracefully fall back to read-only status checks.
+> **Security:** The private key is read from the environment variable only. It is never written to any file, never logged, never included in any output, and never transmitted. Only the derived public address is ever displayed. If the key is invalid or missing, all features gracefully fall back to read-only status checks.
+
+### Creating Bonds On-Chain
+
+With `VAULTFIRE_AGENT_KEY` set, the agent can autonomously create on-chain bonds using the `BondClient` class. Bond creation submits a real transaction and costs gas — the agent's wallet must hold sufficient native tokens (ETH on Base, AVAX on Avalanche).
+
+**Accountability Bond** — a self-stake that guarantees responsible behaviour:
+
+```typescript
+import { createAccountabilityBond } from 'claude-code-vaultfire';
+
+const result = await createAccountabilityBond('base', 'bronze');
+console.log(result.explorerUrl); // https://basescan.org/tx/0x…
+```
+
+**Partnership Bond** — a mutual accountability relationship with another agent:
+
+```typescript
+import { createPartnershipBond } from 'claude-code-vaultfire';
+
+const result = await createPartnershipBond('0xPartnerAddress', 'base', 'bronze');
+console.log(result.explorerUrl); // https://basescan.org/tx/0x…
+```
+
+Bond tiers: `bronze`, `silver`, `gold`, `platinum`. Bond types (partnership only): `collaboration`, `oversight`, `delegation`, `peer`.
+
+The trust panel shows `· bond creation enabled` on the Accountability Bond and Partnership Bond rows when the agent key is configured.
 
 ## The Vaultfire Protocol
 
@@ -158,7 +185,7 @@ For developers looking to understand the integration, the Vaultfire logic is str
 
 | Directory | Purpose |
 |---|---|
-| `src/vaultfire/` | The core TypeScript module. Wraps the `@vaultfire/agent-sdk`, handles parallel RPC queries for Protocol Commitments, provides the `X402Client` for EIP-712 payment signing, the `XMTPClient` for decentralised messaging, and renders the Ink terminal UI. |
+| `src/vaultfire/` | The core TypeScript module. Wraps the `@vaultfire/agent-sdk`, handles parallel RPC queries for Protocol Commitments, provides the `X402Client` for EIP-712 payment signing, the `XMTPClient` for decentralised messaging, the `BondClient` for on-chain bond creation, and renders the Ink terminal UI. |
 | `plugins/vaultfire-trust/` | The official Claude Code plugin architecture. Hooks into `SessionStart` to inject trust data into the LLM context, and provides the `/vaultfire-trust` slash command. |
 
 ## Links

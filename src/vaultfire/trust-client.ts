@@ -32,6 +32,8 @@ import type { TrustProfile } from '@vaultfire/agent-sdk';
 import type { SupportedChain, TrustGrade, TrustResult, ProtocolCommitments, X402Status, XMTPStatus } from './types.js';
 import { getX402Client } from './x402-client.js';
 import { getXMTPClient } from './xmtp-client.js';
+import { getBondClient } from './bond-client.js';
+import type { AccountabilityBondResult, PartnershipBondResult, BondStatusResult } from './bond-client.js';
 
 /* ------------------------------------------------------------------ */
 /*  Retry configuration                                                */
@@ -534,6 +536,72 @@ export async function checkAgentTrust(
  * @param trust - The trust result to summarise.
  * @returns A multi-line string suitable for terminal display.
  */
+/* ------------------------------------------------------------------ */
+/*  Bond creation — write operations (require VAULTFIRE_AGENT_KEY)      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Create an accountability bond on-chain.
+ *
+ * This is a **write operation** — it submits a real on-chain transaction
+ * and costs gas.  Requires `VAULTFIRE_AGENT_KEY` to be set.
+ *
+ * Delegates to {@link BondClient.createAccountabilityBond}.
+ *
+ * @param chain    - The chain to create the bond on (default: 'base').
+ * @param bondTier - The bond tier (default: 'bronze').
+ * @returns The bond creation result.
+ */
+export async function createAccountabilityBond(
+  chain: SupportedChain = 'base',
+  bondTier: 'bronze' | 'silver' | 'gold' | 'platinum' = 'bronze',
+): Promise<AccountabilityBondResult> {
+  const client = getBondClient();
+  return client.createAccountabilityBond(chain, bondTier);
+}
+
+/**
+ * Create a partnership bond with another agent on-chain.
+ *
+ * This is a **write operation** — it submits a real on-chain transaction
+ * and costs gas.  Requires `VAULTFIRE_AGENT_KEY` to be set.
+ *
+ * Delegates to {@link BondClient.createPartnershipBond}.
+ *
+ * @param partnerAddress - The EVM address of the partner agent.
+ * @param chain          - The chain to create the bond on (default: 'base').
+ * @param bondTier       - The bond tier (default: 'bronze').
+ * @returns The partnership bond creation result.
+ */
+export async function createPartnershipBond(
+  partnerAddress: string,
+  chain: SupportedChain = 'base',
+  bondTier: 'bronze' | 'silver' | 'gold' | 'platinum' = 'bronze',
+): Promise<PartnershipBondResult> {
+  const client = getBondClient();
+  return client.createPartnershipBond(partnerAddress, chain, bondTier);
+}
+
+/**
+ * Get the current bond status for the agent.
+ *
+ * This is a **read-only** operation — no wallet or gas required.
+ * Delegates to {@link BondClient.getBondStatus}.
+ *
+ * @param chain - The chain to query (default: 'base').
+ * @returns The current bond status.
+ */
+export async function getAgentBondStatus(
+  chain: SupportedChain = 'base',
+): Promise<BondStatusResult> {
+  const client = getBondClient();
+  return client.getBondStatus(chain);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Trust summary formatting                                           */
+/* ------------------------------------------------------------------ */
+
 export function formatTrustSummary(trust: TrustResult): string {
   const bondIcon    = trust.isBonded          ? '\u2714 Bonded'      : '\u2718 Unbonded';
   const partnerIcon = trust.partnershipBond   ? '\u2714 Active'      : '\u2718 None';

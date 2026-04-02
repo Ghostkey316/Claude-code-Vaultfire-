@@ -7,7 +7,7 @@
  * @example
  * ```ts
  * import { initVaultfirePlugin, checkAgentTrust, TrustPanel } from 'claude-code-vaultfire';
- * import { X402Client, XMTPClient } from 'claude-code-vaultfire';
+ * import { X402Client, XMTPClient, BondClient } from 'claude-code-vaultfire';
  * ```
  *
  * @packageDocumentation
@@ -24,6 +24,11 @@ export {
   getX402Client,
   XMTPClient,
   getXMTPClient,
+  BondClient,
+  getBondClient,
+  createAccountabilityBond,
+  createPartnershipBond,
+  getAgentBondStatus,
 } from './vaultfire/index.js';
 
 export type {
@@ -41,4 +46,7 @@ export type {
   XMTPSendResult,
   XMTPConversation,
   XMTPMessageHandler,
+  AccountabilityBondResult,
+  PartnershipBondResult,
+  BondStatusResult,
 } from './vaultfire/index.js';
