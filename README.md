@@ -171,7 +171,7 @@ The trust panel shows `· bond creation enabled` on the Accountability Bond and 
 
 ## The Vaultfire Protocol
 
-Vaultfire is to AI trust what HTTPS was to web security — the universal trust and accountability layer for the AI age.
+Vaultfire is the trust infrastructure for the AI agent economy — what HTTPS was to web security.
 
 Just as HTTPS made it possible to verify who you were talking to on the web, Vaultfire makes it possible to verify who — and what — your AI agent is. It introduces the **KYA (Know Your Agent)** standard: before any agent acts on your behalf, its identity, ethics, and constraints are verifiable on-chain.
 
