@@ -134,6 +134,10 @@ For developers looking to understand the integration, the Vaultfire logic is str
 ---
 *Belief Built in Partnership with AI*
 
+## What's Next
+
+The next phase of Vaultfire Protocol includes zero-knowledge proof verification via RISC Zero — enabling agents to prove claims about themselves without revealing underlying data. When complete, the trust panel will include a ZK Proofs row showing cryptographic proof of compliance without exposing private information.
+
 ## The Vaultfire Mission
 
 > Morals over metrics.
