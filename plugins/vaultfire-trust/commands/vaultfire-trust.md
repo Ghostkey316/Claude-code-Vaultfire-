@@ -1,5 +1,5 @@
 ---
-description: Display the Vaultfire KYA (Know Your Agent) trust verification status for the current agent, including trust grade, reputation score, bond status, AIPartnershipBondsV2 partnership bond, ERC-8004 identity, and Protocol Commitments.
+description: Display the Vaultfire KYA (Know Your Agent) trust verification status for the current agent, including trust grade, reputation score, bond status, AIPartnershipBondsV2 partnership bond, ERC-8004 identity, x402 payment capability, XMTP messaging identity, and Protocol Commitments.
 ---
 
 # Vaultfire Trust Verification
@@ -43,6 +43,8 @@ Present the trust verification status in a clear, formatted output:
   Chain:                [Base / Avalanche / Ethereum]
   Agent:                [agentAddress]
   VNS Name:             [vaultfire name, if registered]
+  x402 Payments:        [✔ Enabled (EIP-712 · USDC) / ✘ Not configured]
+  XMTP Identity:        [✔ Reachable (xmtp.network) / ✘ Not reachable]
 ────────────────────────────────────────
   Protocol Commitments:
     Anti-Surveillance:    [✔ Enforced on-chain / ✘ Inactive]
@@ -62,6 +64,8 @@ Explain what each field means:
 - **ERC-8004 Identity**: Whether the agent is registered under the on-chain AI identity standard
 - **Chain**: Which blockchain network the verification runs on (`base`, `avalanche`, or `ethereum`)
 - **VNS Name**: The agent's Vaultfire Name Service name, if registered
+- **x402 Payments**: Whether the agent's EVM address is valid for EIP-712 signed USDC micropayments under the x402 standard. This is a format check — a valid non-zero EVM address is considered x402-capable. Vaultfire provides the trust layer that makes agent-authorised payments safe.
+- **XMTP Identity**: Whether the agent is reachable on the XMTP decentralised messaging network. A reachable agent has a verified, persistent messaging identity — proving it is contactable, not just registered.
 
 ## Trust Grade Scale
 

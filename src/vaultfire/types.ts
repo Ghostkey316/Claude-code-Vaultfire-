@@ -36,6 +36,55 @@ export type ReputationTier = 'unverified' | 'bronze' | 'silver' | 'gold' | 'plat
  *   PrivacyGuarantees: 0xc09F0e06690332eD9b490E1040BdE642f11F3937
  *   MissionEnforcement: 0xcf64D815F5424B7937aB226bC733Ed35ab6CaDcB
  */
+/**
+ * x402 payment signing capability status.
+ *
+ * x402 is a standard for AI agent micropayments using EIP-712 signed
+ * USDC transfers.  When an agent has a valid EVM address, it is
+ * considered x402-capable — meaning it can authorise payments on
+ * behalf of the user.  Vaultfire is the trust layer that makes this safe.
+ *
+ * This is a read-only capability check — no wallet or private key is
+ * required.  The signing address is the agent's on-chain address.
+ */
+export interface X402Status {
+  /** Whether the agent address is a valid EVM address capable of EIP-712 signing. */
+  capable: boolean;
+
+  /** The EVM address that would sign x402 payment authorisations. */
+  signingAddress: string;
+
+  /** The signing standard used for payment authorisation. */
+  standard: 'EIP-712';
+
+  /** The payment currency supported by the x402 standard. */
+  currency: 'USDC';
+}
+
+/**
+ * XMTP decentralised messaging identity status.
+ *
+ * XMTP is a decentralised messaging protocol.  An agent with an EVM
+ * address can be reached via XMTP, giving it a verified, persistent
+ * messaging identity.  This proves the agent is reachable, not just
+ * registered — a critical capability for trust.
+ *
+ * The reachability check queries the XMTP network to determine whether
+ * the agent address has an active XMTP identity.  If the XMTP API is
+ * unreachable, the check gracefully returns `reachable: false` without
+ * failing the overall trust verification.
+ */
+export interface XMTPStatus {
+  /** Whether the agent address is registered and reachable on XMTP. */
+  reachable: boolean;
+
+  /** The EVM address used as the XMTP identity. */
+  address: string;
+
+  /** The XMTP network identifier. */
+  network: 'xmtp.network';
+}
+
 export interface ProtocolCommitments {
   /**
    * Whether the AntiSurveillance contract is deployed and active.
@@ -116,6 +165,20 @@ export interface TrustResult {
    * or `null` when no partnership bond is active.
    */
   bondPartner: string | null;
+
+  /**
+   * x402 payment signing capability.
+   * Indicates whether the agent's EVM address is valid for EIP-712
+   * signed USDC micropayments under the x402 standard.
+   */
+  x402: X402Status;
+
+  /**
+   * XMTP decentralised messaging identity.
+   * Indicates whether the agent is reachable via the XMTP messaging
+   * network, proving it has a verified, persistent communication channel.
+   */
+  xmtp: XMTPStatus;
 
   /**
    * On-chain commitments made by the Vaultfire Protocol itself.

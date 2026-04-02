@@ -18,4 +18,6 @@ export type {
   ReputationTier,
   VaultfireConfig,
   ProtocolCommitments,
+  X402Status,
+  XMTPStatus,
 } from './types.js';

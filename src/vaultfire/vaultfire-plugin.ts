@@ -122,6 +122,8 @@ export async function initVaultfirePlugin(): Promise<TrustResult> {
       erc8004Registered: false,
       partnershipBond: false,
       bondPartner: null,
+      x402: { capable: false, signingAddress: '', standard: 'EIP-712', currency: 'USDC' },
+      xmtp: { reachable: false, address: '', network: 'xmtp.network' },
       protocolCommitments: { antiSurveillance: false, privacyGuarantees: false, missionEnforcement: false },
       chain: config.chain,
       address: '',

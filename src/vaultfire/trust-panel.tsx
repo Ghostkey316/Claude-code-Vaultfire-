@@ -183,14 +183,46 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
         <Text>{trust.address}</Text>
       </FieldRow>
 
-      {/* ── VNS Name (optional) ────────────────────────────────── */}
+      {/* ── VNS Name (optional) ─────────────────────────────── */}
       {trust.vnsName && (
         <FieldRow label="VNS Name:">
           <Text color="cyan">{trust.vnsName}</Text>
         </FieldRow>
       )}
 
-      {/* ── Protocol Commitments Divider ───────────────────────── */}
+      {/* ── x402 Payments ───────────────────────────────────── */}
+      <FieldRow label="x402 Payments:">
+        {trust.x402.capable ? (
+          <>
+            <Text color="green">{"\u2714"}</Text>
+            <Text> Enabled</Text>
+            <Text dimColor> ({trust.x402.standard} {"\u00B7"} {trust.x402.currency})</Text>
+          </>
+        ) : (
+          <>
+            <Text color="red">{"\u2718"}</Text>
+            <Text dimColor> Not configured</Text>
+          </>
+        )}
+      </FieldRow>
+
+      {/* ── XMTP Identity ───────────────────────────────────── */}
+      <FieldRow label="XMTP Identity:">
+        {trust.xmtp.reachable ? (
+          <>
+            <Text color="green">{"\u2714"}</Text>
+            <Text> Reachable</Text>
+            <Text dimColor> ({trust.xmtp.network})</Text>
+          </>
+        ) : (
+          <>
+            <Text color="red">{"\u2718"}</Text>
+            <Text dimColor> Not reachable</Text>
+          </>
+        )}
+      </FieldRow>
+
+      {/* ── Protocol Commitments Divider ─────────────────────── */}
       <Box marginTop={1} marginBottom={0}>
         <Text dimColor>{'─'.repeat(38)}</Text>
       </Box>

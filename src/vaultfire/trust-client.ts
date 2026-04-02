@@ -17,12 +17,16 @@
  * partnership bond contributes +5 points to the effective reputation
  * score used for grade calculation.
  *
+ * x402 payment capability is determined by validating the agent address
+ * as a well-formed EVM address (0x + 40 hex chars).  XMTP messaging
+ * identity is checked via the XMTP network's canMessage API.
+ *
  * @module vaultfire/trust-client
  */
 
 import { createVaultfireSDK } from '@vaultfire/agent-sdk';
 import type { TrustProfile } from '@vaultfire/agent-sdk';
-import type { SupportedChain, TrustGrade, TrustResult, ProtocolCommitments } from './types.js';
+import type { SupportedChain, TrustGrade, TrustResult, ProtocolCommitments, X402Status, XMTPStatus } from './types.js';
 
 /* ------------------------------------------------------------------ */
 /*  Retry configuration                                                */
@@ -156,6 +160,107 @@ async function checkProtocolCommitments(chain: string): Promise<ProtocolCommitme
   return { antiSurveillance, privacyGuarantees, missionEnforcement };
 }
 
+/* ------------------------------------------------------------------ */
+/*  x402 payment capability                                            */
+/* ------------------------------------------------------------------ */
+
+/** Regex for a valid EVM address: 0x followed by exactly 40 hex chars. */
+const EVM_ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
+
+/**
+ * Check whether the agent address is x402-capable.
+ *
+ * An agent is considered x402-capable when its address is a valid,
+ * non-zero EVM address (0x + 40 hex chars).  This is a pure format
+ * check — no wallet, no private key, no on-chain call required.
+ *
+ * @param agentAddress - The on-chain address to validate.
+ * @returns An {@link X402Status} object.
+ */
+function checkX402Capability(agentAddress: string): X402Status {
+  const isValid =
+    EVM_ADDRESS_RE.test(agentAddress) &&
+    agentAddress !== '0x0000000000000000000000000000000000000000';
+
+  if (isValid) {
+    console.log(`[vaultfire] x402: agent address is a valid EVM address — payment capability enabled.`);
+  } else {
+    console.log(`[vaultfire] x402: agent address is not a valid EVM address — payment capability disabled.`);
+  }
+
+  return {
+    capable: isValid,
+    signingAddress: isValid ? agentAddress : '',
+    standard: 'EIP-712',
+    currency: 'USDC',
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  XMTP messaging identity                                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Check whether the agent address is reachable on the XMTP network.
+ *
+ * Queries the XMTP canMessage API to determine whether the address
+ * has an active XMTP identity.  If the API call fails or returns
+ * not-found, the function gracefully returns `reachable: false`
+ * without failing the overall trust verification.
+ *
+ * This is a read-only HTTP call — no wallet or private key required.
+ *
+ * @param agentAddress - The EVM address to check on XMTP.
+ * @returns An {@link XMTPStatus} object.
+ */
+async function checkXMTPReachability(agentAddress: string): Promise<XMTPStatus> {
+  const fallback: XMTPStatus = {
+    reachable: false,
+    address: agentAddress,
+    network: 'xmtp.network',
+  };
+
+  // Must be a valid EVM address to even attempt the check
+  if (!EVM_ADDRESS_RE.test(agentAddress)) {
+    console.log('[vaultfire] XMTP: invalid address format — skipping reachability check.');
+    return fallback;
+  }
+
+  try {
+    // XMTP canMessage API — checks if an address has an XMTP identity
+    // See: https://docs.xmtp.org/protocol/identity
+    const url = `https://production.xmtp.network/identity/v1/is-inbox-id/${agentAddress.toLowerCase()}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(5_000), // 5s timeout
+    });
+
+    if (res.ok) {
+      // A 200 response means the address is known to XMTP
+      console.log(`[vaultfire] XMTP: address is reachable on xmtp.network.`);
+      return {
+        reachable: true,
+        address: agentAddress,
+        network: 'xmtp.network',
+      };
+    }
+
+    // 404 or other status — address not registered on XMTP
+    console.log(`[vaultfire] XMTP: address not found on xmtp.network (HTTP ${res.status}).`);
+    return fallback;
+  } catch (err: unknown) {
+    // Network error, timeout, etc. — don't fail the trust check
+    const msg = err instanceof Error ? err.message : String(err);
+    console.log(`[vaultfire] XMTP: reachability check failed (${msg}) — defaulting to not reachable.`);
+    return fallback;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Trust grade calculation                                            */
+/* ------------------------------------------------------------------ */
+
 /**
  * Derive a trust grade from a numeric reputation score.
  *
@@ -206,6 +311,8 @@ function buildFallbackResult(
     erc8004Registered: false,
     partnershipBond: false,
     bondPartner: null,
+    x402: { capable: false, signingAddress: '', standard: 'EIP-712', currency: 'USDC' },
+    xmtp: { reachable: false, address, network: 'xmtp.network' },
     protocolCommitments: { antiSurveillance: false, privacyGuarantees: false, missionEnforcement: false },
     chain,
     address,
@@ -249,6 +356,17 @@ export function buildDemoResult(
     erc8004Registered: true,
     partnershipBond: true,
     bondPartner: '0xVaultfire000000000000000000000000000000',
+    x402: {
+      capable: true,
+      signingAddress: address || '0xDEMO000000000000000000000000000000000000',
+      standard: 'EIP-712',
+      currency: 'USDC',
+    },
+    xmtp: {
+      reachable: true,
+      address: address || '0xDEMO000000000000000000000000000000000000',
+      network: 'xmtp.network',
+    },
     protocolCommitments: {
       antiSurveillance: true,
       privacyGuarantees: true,
@@ -295,11 +413,19 @@ export async function checkAgentTrust(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      // Run agent trust check and protocol commitment check in parallel
-      const [trust, protocolCommitments] = await Promise.all([
+      // Run all checks in parallel for maximum speed:
+      // 1. Agent trust via Vaultfire SDK
+      // 2. Protocol commitment contract bytecode verification
+      // 3. XMTP messaging identity reachability
+      // (x402 is a synchronous format check, run after)
+      const [trust, protocolCommitments, xmtp] = await Promise.all([
         sdk.verifyTrust(address) as Promise<TrustProfile>,
         checkProtocolCommitments(chain),
+        checkXMTPReachability(address),
       ]);
+
+      // x402 — synchronous EVM address format validation
+      const x402 = checkX402Capability(address);
 
       // AIPartnershipBondsV2 — the SDK surfaces the on-chain bond state
       // through TrustProfile.isBonded and TrustProfile.bondPartner.
@@ -339,6 +465,8 @@ export async function checkAgentTrust(
         erc8004Registered: trust.isRegistered ?? false,
         partnershipBond,
         bondPartner,
+        x402,
+        xmtp,
         protocolCommitments,
         chain,
         address,
@@ -406,6 +534,14 @@ export function formatTrustSummary(trust: TrustResult): string {
     `  Chain:              ${chainLabel}`,
     `  Agent:              ${trust.address}`,
     trust.vnsName ? `  VNS Name:           ${trust.vnsName}` : '',
+    '',
+    trust.x402.capable
+      ? `  x402 Payments:      \u2714 Enabled (${trust.x402.standard} \u00B7 ${trust.x402.currency})`
+      : '  x402 Payments:      \u2718 Not configured',
+    trust.xmtp.reachable
+      ? `  XMTP Identity:      \u2714 Reachable (${trust.xmtp.network})`
+      : '  XMTP Identity:      \u2718 Not reachable',
+    '',
     trust.errorMessage ? `  Status:             ${trust.errorMessage}` : '',
     ''.padStart(40, '\u2500'),
     '  Protocol Commitments:',

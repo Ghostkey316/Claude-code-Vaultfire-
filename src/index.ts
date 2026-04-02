@@ -27,4 +27,6 @@ export type {
   ReputationTier,
   VaultfireConfig,
   ProtocolCommitments,
+  X402Status,
+  XMTPStatus,
 } from './vaultfire/index.js';
