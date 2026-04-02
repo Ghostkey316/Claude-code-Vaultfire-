@@ -152,8 +152,8 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
         <Text color="gray"> ({trust.reputationTier})</Text>
       </FieldRow>
 
-      {/* ── Bond Status ────────────────────────────────────────── */}
-      <FieldRow label="Bond Status:">
+      {/* ── Accountability Bond ──────────────────────────────── */}
+      <FieldRow label="Accountability Bond:">
         <Text color={bond.color}>{bond.symbol}</Text>
         <Text> {trust.isBonded ? 'Bonded' : 'Unbonded'}</Text>
       </FieldRow>

@@ -525,7 +525,7 @@ export function formatTrustSummary(trust: TrustResult): string {
     demoTag,
     `  Trust Grade:        ${trust.trustGrade}`,
     `  Reputation Score:   ${trust.reputationScore} / 100  (${trust.reputationTier})`,
-    `  Bond Status:        ${bondIcon}`,
+    `  Accountability Bond: ${bondIcon}`,
     `  Partnership Bond:   ${partnerIcon}`,
     trust.partnershipBond && trust.bondPartner
       ? `  Bond Partner:       ${trust.bondPartner}`

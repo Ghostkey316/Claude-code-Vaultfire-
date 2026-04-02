@@ -13,7 +13,7 @@ When you run Claude Code — Vaultfire Edition, the trust panel provides an imme
 ────────────────────────────────────────
   Trust Grade:        A
   Reputation Score:   95 / 100  (platinum)
-  Bond Status:        ✔ Bonded
+  Accountability Bond: ✔ Bonded
   Partnership Bond:   ✔ Active
   ERC-8004 Identity:  ✔ Registered
   Chain:              Base
@@ -35,7 +35,7 @@ When you run Claude Code — Vaultfire Edition, the trust panel provides an imme
 **Trust Grade & Reputation Score**
 The overall trustworthiness rating (A–F) derived from the agent's on-chain history. The numeric score (0–100) determines the tier (unverified, bronze, silver, gold, platinum).
 
-**Bond Status**
+**Accountability Bond**
 Indicates whether the agent has staked an accountability bond. Bonded agents have financial skin in the game, ensuring alignment and responsible execution.
 
 **Partnership Bond**

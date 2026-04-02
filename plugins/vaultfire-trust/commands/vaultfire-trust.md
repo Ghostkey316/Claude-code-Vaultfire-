@@ -1,5 +1,5 @@
 ---
-description: Display the Vaultfire KYA (Know Your Agent) trust verification status for the current agent, including trust grade, reputation score, bond status, AIPartnershipBondsV2 partnership bond, ERC-8004 identity, x402 payment capability, XMTP messaging identity, and Protocol Commitments.
+description: Display the Vaultfire KYA (Know Your Agent) trust verification status for the current agent, including trust grade, reputation score, accountability bond, AIPartnershipBondsV2 partnership bond, ERC-8004 identity, x402 payment capability, XMTP messaging identity, and Protocol Commitments.
 ---
 
 # Vaultfire Trust Verification
@@ -37,7 +37,7 @@ Present the trust verification status in a clear, formatted output:
 ────────────────────────────────────────
   Trust Grade:          [A / B / C / D / F / Unverified]
   Reputation Score:     [0–100] / 100  ([tier])
-  Bond Status:          [✔ Bonded / ✘ Unbonded]
+  Accountability Bond:  [✔ Bonded / ✘ Unbonded]
   Partnership Bond:     [✔ Active / ✘ None]  (AIPartnershipBondsV2)
   ERC-8004 Identity:    [✔ Registered / ✘ Unregistered]
   Chain:                [Base / Avalanche / Ethereum]
@@ -59,7 +59,7 @@ Present the trust verification status in a clear, formatted output:
 Explain what each field means:
 - **Trust Grade**: Overall trustworthiness rating (A–F). An active AIPartnershipBondsV2 bond adds +5 points to the score, which may improve the grade.
 - **Reputation Score**: Numeric score based on on-chain history (0–100)
-- **Bond Status**: Whether the agent has staked an accountability bond
+- **Accountability Bond**: Whether the agent has staked an accountability bond
 - **Partnership Bond**: Whether the agent has an active AIPartnershipBondsV2 partnership bond with another agent or operator
 - **ERC-8004 Identity**: Whether the agent is registered under the on-chain AI identity standard
 - **Chain**: Which blockchain network the verification runs on (`base`, `avalanche`, or `ethereum`)
