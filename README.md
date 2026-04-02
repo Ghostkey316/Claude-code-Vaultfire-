@@ -6,6 +6,42 @@ This repository contains the complete open-source Claude Code distribution, enha
 
 > **⚠️ Alpha Software** — Vaultfire Protocol is live on Base and Avalanche mainnet, but is currently in alpha. The smart contracts are deployed and functional, and the trust checks run against real on-chain data. However, the protocol is under active development: APIs may change, features are being added, and edge cases are still being addressed. This integration should not be used in production systems without a clear understanding of those risks. Use demo mode (`claude --vaultfire-demo`) to explore safely without requiring a configured agent address.
 
+## Quick Start — 60 Seconds
+
+**1. Clone & Install**
+```bash
+git clone https://github.com/Ghostkey316/Claude-code-Vaultfire-.git
+cd Claude-code-Vaultfire-
+npm install && npm run build
+```
+
+**2. Run Demo Mode** — see the full trust panel instantly, no configuration needed:
+```bash
+claude --vaultfire-demo
+```
+
+**3. Live Mode** — verify a real agent address on-chain:
+
+Create `vaultfire.config.json` in the project directory:
+```json
+{
+  "agentAddress": "0xYourAgentAddress",
+  "chain": "base"
+}
+```
+Then run:
+```bash
+claude
+```
+
+**Optional — Enable x402 Payment Signing & XMTP Messaging:**
+```bash
+export VAULTFIRE_AGENT_KEY=your_agent_private_key
+claude
+```
+
+> Prerequisites: Node.js 18+ required.
+
 ## The Trust Panel
 
 When you run Claude Code — Vaultfire Edition, the trust panel provides an immediate, verifiable readout of the agent's on-chain state:
