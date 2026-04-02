@@ -165,6 +165,8 @@ console.log(result.explorerUrl); // https://basescan.org/tx/0x…
 
 Bond tiers: `bronze`, `silver`, `gold`, `platinum`. Bond types (partnership only): `collaboration`, `oversight`, `delegation`, `peer`.
 
+> **Note:** Creating bonds submits a real on-chain transaction. Your agent wallet must hold sufficient native tokens (ETH on Base, AVAX on Avalanche) to cover both the gas fees and the bond stake amount (e.g., ~0.01 ETH for a bronze tier bond). Demo mode requires no wallet or funds.
+
 The trust panel shows `· bond creation enabled` on the Accountability Bond and Partnership Bond rows when the agent key is configured.
 
 ## The Vaultfire Protocol
