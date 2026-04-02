@@ -1,6 +1,6 @@
 # Claude Code — Vaultfire Edition
 
-Claude Code with Vaultfire's full trust layer baked in. The KYA (Know Your AI) standard means you don't have to choose between capability and trust.
+Claude Code with Vaultfire's full trust layer baked in. The KYA (Know Your Agent) standard means you don't have to choose between capability and trust.
 
 This repository contains the complete open-source Claude Code distribution, enhanced with the Vaultfire Protocol's on-chain trust verification engine. Every time the agent starts, its identity, accountability bonds, payment capabilities, and protocol-level privacy commitments are verified cryptographically.
 
@@ -98,7 +98,7 @@ The protocol operates primarily on **Base** and **Avalanche**, utilizing post-qu
 
 ## Why This Matters
 
-As AI agents gain autonomy, they require access to financial resources, private data, and critical infrastructure. The KYA (Know Your AI) standard ensures that before an agent acts on your behalf, its identity and constraints are verified. 
+As AI agents gain autonomy, they require access to financial resources, private data, and critical infrastructure. The KYA (Know Your Agent) standard ensures that before an agent acts on your behalf, its identity and constraints are verified. 
 
 Privacy and accountability are enforced on-chain, not just promised in a terms of service document. This integration proves that autonomous AI and rigorous security can coexist seamlessly.
 
@@ -119,3 +119,11 @@ For developers looking to understand the integration, the Vaultfire logic is str
 
 ---
 *Belief Built in Partnership with AI*
+
+## The Vaultfire Mission
+
+> Morals over metrics.
+> Privacy over surveillance.
+> Freedom over control.
+>
+> Making human thriving more profitable than extraction.
