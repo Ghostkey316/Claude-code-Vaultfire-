@@ -17,4 +17,5 @@ export type {
   SupportedChain,
   ReputationTier,
   VaultfireConfig,
+  ProtocolCommitments,
 } from './types.js';

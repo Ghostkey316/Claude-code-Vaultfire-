@@ -26,4 +26,5 @@ export type {
   SupportedChain,
   ReputationTier,
   VaultfireConfig,
+  ProtocolCommitments,
 } from './vaultfire/index.js';
