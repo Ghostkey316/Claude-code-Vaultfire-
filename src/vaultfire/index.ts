@@ -8,9 +8,11 @@
  * @module vaultfire
  */
 
-export { checkAgentTrust, formatTrustSummary } from './trust-client.js';
+export { checkAgentTrust, formatTrustSummary, buildDemoResult } from './trust-client.js';
 export { TrustPanel } from './trust-panel.js';
 export { initVaultfirePlugin, generateHookOutput } from './vaultfire-plugin.js';
+export { X402Client, getX402Client } from './x402-client.js';
+export { XMTPClient, getXMTPClient } from './xmtp-client.js';
 export type {
   TrustResult,
   TrustGrade,
@@ -21,3 +23,13 @@ export type {
   X402Status,
   XMTPStatus,
 } from './types.js';
+export type {
+  X402Payload,
+  X402SignResult,
+} from './x402-client.js';
+export type {
+  XMTPMessage,
+  XMTPSendResult,
+  XMTPConversation,
+  XMTPMessageHandler,
+} from './xmtp-client.js';

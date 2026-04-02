@@ -53,10 +53,10 @@ The blockchain network (`base`, `avalanche`, or `ethereum`) and the agent's cryp
 The human-readable Vaultfire Name Service identifier assigned to the agent, if registered.
 
 **x402 Payments**
-Validates the agent's EVM address format for EIP-712 signed USDC micropayments under the x402 standard. Vaultfire provides the trust layer that makes agent-authorised payments safe.
+Validates the agent's EVM address for EIP-712 signed USDC micropayments under the x402 standard. When `VAULTFIRE_AGENT_KEY` is set, the agent has full payment signing capability via the `X402Client` class and the panel shows `✔ Enabled · signing active`. Without the key, a read-only address format check is performed. Vaultfire provides the trust layer that makes agent-authorised payments safe.
 
 **XMTP Identity**
-Queries the decentralised XMTP messaging network to prove the agent has a verified, persistent communication channel and is actively reachable.
+Queries the decentralised XMTP messaging network to verify the agent has a persistent communication channel. When `VAULTFIRE_AGENT_KEY` is set, the agent has full messaging capability via the `XMTPClient` class and the panel shows `✔ Reachable · messaging active`. Without the key, a read-only reachability check is performed against the XMTP API.
 
 **Protocol Commitments**
 Verifies that the Vaultfire Protocol's own smart contracts are deployed and active on the current chain. These are structural, protocol-level guarantees:
@@ -90,6 +90,20 @@ To verify a real agent against live on-chain data, create a `vaultfire.config.js
 
 When configured, Claude Code will query the Vaultfire API and public RPC endpoints on startup to verify the agent's trust state and inject the results directly into the LLM's context.
 
+### Enabling x402 Payment Signing & XMTP Messaging
+
+To unlock full interactive capabilities, set the `VAULTFIRE_AGENT_KEY` environment variable:
+
+```bash
+export VAULTFIRE_AGENT_KEY=<your-agent-private-key>
+```
+
+This enables:
+- **x402 Payment Signing** — Full EIP-712 signed USDC payment authorisations via the `X402Client` class
+- **XMTP Messaging** — Send and receive encrypted messages on the decentralised XMTP network via the `XMTPClient` class
+
+> **Security:** The private key is read from the environment variable only. It is never written to any file, never logged, never included in any output, and never transmitted. Only the derived public address is ever displayed. If the key is invalid or missing, both features gracefully fall back to read-only status checks.
+
 ## The Vaultfire Protocol
 
 Vaultfire is the trust layer for the AI agent economy. It replaces opaque "trust me" promises with verifiable, on-chain cryptography.
@@ -108,7 +122,7 @@ For developers looking to understand the integration, the Vaultfire logic is str
 
 | Directory | Purpose |
 |---|---|
-| `src/vaultfire/` | The core TypeScript module. Wraps the `@vaultfire/agent-sdk`, handles parallel RPC queries for Protocol Commitments, validates x402/XMTP, and renders the Ink terminal UI. |
+| `src/vaultfire/` | The core TypeScript module. Wraps the `@vaultfire/agent-sdk`, handles parallel RPC queries for Protocol Commitments, provides the `X402Client` for EIP-712 payment signing, the `XMTPClient` for decentralised messaging, and renders the Ink terminal UI. |
 | `plugins/vaultfire-trust/` | The official Claude Code plugin architecture. Hooks into `SessionStart` to inject trust data into the LLM context, and provides the `/vaultfire-trust` slash command. |
 
 ## Links

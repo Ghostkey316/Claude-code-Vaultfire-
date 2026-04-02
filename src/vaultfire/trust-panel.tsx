@@ -197,6 +197,9 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
             <Text color="green">{"\u2714"}</Text>
             <Text> Enabled</Text>
             <Text dimColor> ({trust.x402.standard} {"\u00B7"} {trust.x402.currency})</Text>
+            {process.env['VAULTFIRE_AGENT_KEY'] && (
+              <Text color="green" dimColor> {"\u00B7"} signing active</Text>
+            )}
           </>
         ) : (
           <>
@@ -213,6 +216,9 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
             <Text color="green">{"\u2714"}</Text>
             <Text> Reachable</Text>
             <Text dimColor> ({trust.xmtp.network})</Text>
+            {process.env['VAULTFIRE_AGENT_KEY'] && (
+              <Text color="green" dimColor> {"\u00B7"} messaging active</Text>
+            )}
           </>
         ) : (
           <>

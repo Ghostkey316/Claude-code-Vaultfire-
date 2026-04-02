@@ -64,8 +64,8 @@ Explain what each field means:
 - **ERC-8004 Identity**: Whether the agent is registered under the on-chain AI identity standard
 - **Chain**: Which blockchain network the verification runs on (`base`, `avalanche`, or `ethereum`)
 - **VNS Name**: The agent's Vaultfire Name Service name, if registered
-- **x402 Payments**: Whether the agent's EVM address is valid for EIP-712 signed USDC micropayments under the x402 standard. This is a format check — a valid non-zero EVM address is considered x402-capable. Vaultfire provides the trust layer that makes agent-authorised payments safe.
-- **XMTP Identity**: Whether the agent is reachable on the XMTP decentralised messaging network. A reachable agent has a verified, persistent messaging identity — proving it is contactable, not just registered.
+- **x402 Payments**: Whether the agent can sign EIP-712 USDC micropayments under the x402 standard. When `VAULTFIRE_AGENT_KEY` is set as an environment variable, the agent has full signing capability and the panel shows `✔ Enabled · signing active`. Without the key, a valid EVM address is still marked as x402-capable (read-only). Vaultfire provides the trust layer that makes agent-authorised payments safe.
+- **XMTP Identity**: Whether the agent can send and receive messages on the XMTP decentralised messaging network. When `VAULTFIRE_AGENT_KEY` is set, the agent has full messaging capability and the panel shows `✔ Reachable · messaging active`. Without the key, a read-only reachability check is performed against the XMTP API.
 
 ## Trust Grade Scale
 
@@ -84,6 +84,22 @@ The Protocol Commitments section shows whether the Vaultfire Protocol's own smar
 - **Anti-Surveillance** — on-chain prohibition against agent surveillance and data harvesting without consent
 - **Privacy Guarantees** — binding privacy commitments encoded on-chain
 - **Mission Enforcement** — constraints preventing agents from operating outside their declared purpose
+
+## Environment Variable: VAULTFIRE_AGENT_KEY
+
+Setting the `VAULTFIRE_AGENT_KEY` environment variable enables full interactive capabilities:
+
+```bash
+export VAULTFIRE_AGENT_KEY=<your-agent-private-key>
+```
+
+**Security:** The key is read from the environment variable ONLY — it is never written to any file, never logged, never included in any output. Only the derived public address is ever displayed.
+
+When set, the following features are activated:
+- **x402 Payment Signing** — Full EIP-712 signed USDC payment authorisations via the `X402Client` class
+- **XMTP Messaging** — Send and receive encrypted messages via the `XMTPClient` class
+
+When not set, both features gracefully fall back to read-only status checks.
 
 ## Demo Mode
 

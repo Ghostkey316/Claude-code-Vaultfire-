@@ -18,8 +18,11 @@
  * score used for grade calculation.
  *
  * x402 payment capability is determined by validating the agent address
- * as a well-formed EVM address (0x + 40 hex chars).  XMTP messaging
- * identity is checked via the XMTP network's canMessage API.
+ * as a well-formed EVM address (0x + 40 hex chars).  When the
+ * VAULTFIRE_AGENT_KEY environment variable is set, the X402Client
+ * enables full EIP-712 payment signing and the XMTPClient enables
+ * full decentralised messaging.  Without the key, both features
+ * fall back to read-only status checks.
  *
  * @module vaultfire/trust-client
  */
@@ -27,6 +30,8 @@
 import { createVaultfireSDK } from '@vaultfire/agent-sdk';
 import type { TrustProfile } from '@vaultfire/agent-sdk';
 import type { SupportedChain, TrustGrade, TrustResult, ProtocolCommitments, X402Status, XMTPStatus } from './types.js';
+import { getX402Client } from './x402-client.js';
+import { getXMTPClient } from './xmtp-client.js';
 
 /* ------------------------------------------------------------------ */
 /*  Retry configuration                                                */
@@ -178,12 +183,29 @@ const EVM_ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
  * @returns An {@link X402Status} object.
  */
 function checkX402Capability(agentAddress: string): X402Status {
+  // When VAULTFIRE_AGENT_KEY is set, the X402Client derives the real
+  // signing address and enables full EIP-712 payment signing.
+  const x402Client = getX402Client();
+  if (x402Client.enabled) {
+    console.log(
+      `[vaultfire] x402: VAULTFIRE_AGENT_KEY detected — full EIP-712 signing enabled ` +
+        `(address: ${x402Client.address})`,
+    );
+    return {
+      capable: true,
+      signingAddress: x402Client.address,
+      standard: 'EIP-712',
+      currency: 'USDC',
+    };
+  }
+
+  // Fallback: simple EVM address format check (read-only, no signing)
   const isValid =
     EVM_ADDRESS_RE.test(agentAddress) &&
     agentAddress !== '0x0000000000000000000000000000000000000000';
 
   if (isValid) {
-    console.log(`[vaultfire] x402: agent address is a valid EVM address — payment capability enabled.`);
+    console.log(`[vaultfire] x402: agent address is a valid EVM address — payment capability enabled (read-only, no signing key).`);
   } else {
     console.log(`[vaultfire] x402: agent address is not a valid EVM address — payment capability disabled.`);
   }
@@ -220,24 +242,36 @@ async function checkXMTPReachability(agentAddress: string): Promise<XMTPStatus> 
     network: 'xmtp.network',
   };
 
-  // Must be a valid EVM address to even attempt the check
+  // When VAULTFIRE_AGENT_KEY is set, the XMTPClient has full messaging
+  // capability — report as reachable with the derived address.
+  const xmtpClient = getXMTPClient();
+  if (xmtpClient.enabled) {
+    console.log(
+      `[vaultfire] XMTP: VAULTFIRE_AGENT_KEY detected — full messaging enabled ` +
+        `(address: ${xmtpClient.address})`,
+    );
+    return {
+      reachable: true,
+      address: xmtpClient.address,
+      network: 'xmtp.network',
+    };
+  }
+
+  // Fallback: read-only reachability check via XMTP API (no key needed)
   if (!EVM_ADDRESS_RE.test(agentAddress)) {
     console.log('[vaultfire] XMTP: invalid address format — skipping reachability check.');
     return fallback;
   }
 
   try {
-    // XMTP canMessage API — checks if an address has an XMTP identity
-    // See: https://docs.xmtp.org/protocol/identity
     const url = `https://production.xmtp.network/identity/v1/is-inbox-id/${agentAddress.toLowerCase()}`;
     const res = await fetch(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(5_000), // 5s timeout
+      signal: AbortSignal.timeout(5_000),
     });
 
     if (res.ok) {
-      // A 200 response means the address is known to XMTP
       console.log(`[vaultfire] XMTP: address is reachable on xmtp.network.`);
       return {
         reachable: true,
@@ -246,11 +280,9 @@ async function checkXMTPReachability(agentAddress: string): Promise<XMTPStatus> 
       };
     }
 
-    // 404 or other status — address not registered on XMTP
     console.log(`[vaultfire] XMTP: address not found on xmtp.network (HTTP ${res.status}).`);
     return fallback;
   } catch (err: unknown) {
-    // Network error, timeout, etc. — don't fail the trust check
     const msg = err instanceof Error ? err.message : String(err);
     console.log(`[vaultfire] XMTP: reachability check failed (${msg}) — defaulting to not reachable.`);
     return fallback;
