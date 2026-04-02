@@ -3,11 +3,6 @@ name: Vaultfire CI
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - 'src/**'
-      - 'plugins/vaultfire-trust/**'
-      - 'package.json'
-      - 'tsconfig.json'
   pull_request:
     branches: [ "main" ]
 
