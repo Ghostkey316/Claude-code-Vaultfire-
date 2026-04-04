@@ -6,41 +6,89 @@ This repository contains the complete open-source Claude Code distribution, enha
 
 > **⚠️ Alpha Software** — Vaultfire Protocol is live on Base and Avalanche mainnet, but is currently in alpha. The smart contracts are deployed and functional, and the trust checks run against real on-chain data. However, the protocol is under active development: APIs may change, features are being added, and edge cases are still being addressed. This integration should not be used in production systems without a clear understanding of those risks. Use demo mode (`node --input-type=module -e "import('./dist/vaultfire/vaultfire-plugin.js').then(m => m.initVaultfirePlugin())" -- --vaultfire-demo`) to explore safely without requiring a configured agent address.
 
-## Quick Start — 60 Seconds
+## Quick Start
 
-**1. Clone & Install**
+**Prerequisites:** Node.js 18+, npm
+
+**1. Clone, install, and build**
+
 ```bash
 git clone https://github.com/Ghostkey316/Claude-code-Vaultfire-.git
 cd Claude-code-Vaultfire-
-npm install && npm run build
+npm install
+npm run build
 ```
 
-**2. Run Demo Mode** — see the full trust panel instantly, no configuration needed:
+The build compiles the TypeScript Vaultfire plugin to `dist/vaultfire/`.
+
+**2. Run demo mode** — see the trust panel instantly, no wallet or config needed:
+
 ```bash
-node --input-type=module -e "import('./dist/vaultfire/vaultfire-plugin.js').then(m => m.initVaultfirePlugin())" -- --vaultfire-demo
+node --input-type=module -e \
+  "import('./dist/vaultfire/vaultfire-plugin.js').then(m => m.initVaultfirePlugin())" \
+  -- --vaultfire-demo
 ```
 
-**3. Live Mode** — verify a real agent address on-chain:
+You’ll see a trust panel with demo data. No on-chain calls are made in demo mode.
 
-Create `vaultfire.config.json` in the project directory:
+**3. Verify a real agent address on-chain**
+
+Create `vaultfire.config.json` in the project root:
+
 ```json
 {
   "agentAddress": "0xYourAgentAddress",
   "chain": "base"
 }
 ```
-Then run:
+
+Run the plugin:
+
 ```bash
-node --input-type=module -e "import('./dist/vaultfire/vaultfire-plugin.js').then(m => m.initVaultfirePlugin())"
+node --input-type=module -e \
+  "import('./dist/vaultfire/vaultfire-plugin.js').then(m => m.initVaultfirePlugin())"
 ```
 
-**Optional — Enable x402 Payment Signing & XMTP Messaging:**
+The trust panel will show live on-chain data from Base mainnet.
+
+**4. Enable x402 payment signing and XMTP messaging (optional)**
+
 ```bash
-export VAULTFIRE_AGENT_KEY=your_agent_private_key
-node --input-type=module -e "import('./dist/vaultfire/vaultfire-plugin.js').then(m => m.initVaultfirePlugin())"
+export VAULTFIRE_AGENT_KEY=0xYourAgentPrivateKey
+node --input-type=module -e \
+  "import('./dist/vaultfire/vaultfire-plugin.js').then(m => m.initVaultfirePlugin())"
 ```
 
-> Prerequisites: Node.js 18+ required.
+> ⚠️ **Security:** Never commit your private key. Always use environment variables or a secrets manager.
+
+**5. What you’ll see**
+
+```
+⚡ VAULTFIRE TRUST VERIFICATION ⚡
+────────────────────────────────────────
+  Trust Grade:         A
+  Street Cred:         55 / 95  (silver)
+  Partnership Bond:    ✔ Active  ← LIVE on Base
+  ERC-8004 Identity:   ✔ Registered  ← LIVE on Base
+  Accountability Bond: ✘ Not bonded  ← requires yield pool funding (v1.0)
+  Chain:               Base
+  Agent:               0xYourAgentAddress
+────────────────────────────────────────
+```
+
+**6. Use with Claude Code**
+
+To run the full Claude Code agent with Vaultfire trust verification active:
+
+```bash
+# Start Claude Code normally
+claude
+
+# The Vaultfire plugin hooks into the startup sequence automatically
+# Trust verification runs before the first prompt is processed
+```
+
+See [CLAUDE.md](./CLAUDE.md) for the full Claude Code configuration and available commands.
 
 ## The Trust Panel
 
