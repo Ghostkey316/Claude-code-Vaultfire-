@@ -181,7 +181,7 @@ export const TrustPanel: React.FC<TrustPanelProps> = ({ trust }) => {
 
       {/* ── Chain ──────────────────────────────────────────────── */}
       <FieldRow label="Chain:">
-        <Text bold>{{ base: 'Base', avalanche: 'Avalanche', ethereum: 'Ethereum' }[trust.chain] ?? trust.chain}</Text>
+        <Text bold>{{ base: 'Base', avalanche: 'Avalanche', arbitrum: 'Arbitrum', polygon: 'Polygon' }[trust.chain] ?? trust.chain}</Text>
       </FieldRow>
 
       {/* ── Agent Address ──────────────────────────────────────── */}

@@ -447,7 +447,7 @@ export async function checkAgentTrust(
   address: string,
   chain: SupportedChain = 'base',
 ): Promise<TrustResult> {
-  const sdk = createVaultfireSDK({ chain });
+  const sdk = createVaultfireSDK({ chain: chain as any });
 
   let lastError: unknown;
 
@@ -563,7 +563,7 @@ export async function createAccountabilityBond(
   bondTier: 'bronze' | 'silver' | 'gold' | 'platinum' = 'bronze',
 ): Promise<AccountabilityBondResult> {
   const client = getBondClient();
-  return client.createAccountabilityBond(chain, bondTier);
+  return client.createAccountabilityBond(chain as any, bondTier);
 }
 
 /**
@@ -585,7 +585,7 @@ export async function createPartnershipBond(
   bondTier: 'bronze' | 'silver' | 'gold' | 'platinum' = 'bronze',
 ): Promise<PartnershipBondResult> {
   const client = getBondClient();
-  return client.createPartnershipBond(partnerAddress, chain, bondTier);
+  return client.createPartnershipBond(partnerAddress, chain as any, bondTier);
 }
 
 /**
@@ -601,7 +601,7 @@ export async function getAgentBondStatus(
   chain: SupportedChain = 'base',
 ): Promise<BondStatusResult> {
   const client = getBondClient();
-  return client.getBondStatus(chain);
+  return client.getBondStatus(chain as any);
 }
 
 /* ------------------------------------------------------------------ */
