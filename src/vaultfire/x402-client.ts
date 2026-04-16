@@ -25,14 +25,16 @@ import { ethers } from 'ethers';
 const USDC_ADDRESSES: Record<number, string> = {
   8453:   '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base
   43114:  '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E', // Avalanche
-  1:      '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // Ethereum
+  42161:  '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum
+  137:    '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', // Polygon
 };
 
 /** Map chain name to chain ID. */
 const CHAIN_IDS: Record<string, number> = {
   base:      8453,
   avalanche: 43114,
-  ethereum:  1,
+  arbitrum:  42161,
+  polygon:   137,
 };
 
 /** The EIP-712 type definitions for an x402 payment authorisation. */
@@ -142,8 +144,8 @@ export class X402Client {
    * @param to       - The recipient EVM address.
    * @param amount   - The payment amount in USDC base units (6 decimals).
    * @param currency - The payment currency (must be 'USDC').
-   * @param chainId  - The chain ID (8453 for Base, 43114 for Avalanche, 1 for Ethereum).
-   *                   Can also be a chain name ('base', 'avalanche', 'ethereum').
+   * @param chainId  - The chain ID (8453 for Base, 43114 for Avalanche, 42161 for Arbitrum, 137 for Polygon).
+   *                   Can also be a chain name ('base', 'avalanche', 'arbitrum', 'polygon').
    * @returns The signed payment result, or throws if the client is disabled.
    */
   async signPayment(

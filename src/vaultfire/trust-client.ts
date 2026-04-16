@@ -73,7 +73,12 @@ const PROTOCOL_CONTRACTS: Record<string, ProtocolContractSet> = {
     privacyGuarantees:  '0xc09F0e06690332eD9b490E1040BdE642f11F3937',
     missionEnforcement: '0xcf64D815F5424B7937aB226bC733Ed35ab6CaDcB',
   },
-  ethereum: {
+  arbitrum: {
+    antiSurveillance:   '0xfDdd2B1597c87577543176AB7f49D587876563D2',
+    privacyGuarantees:  '0x8aceF0Bc7e07B2dE35E9069663953f41B5422218',
+    missionEnforcement: '0x0E777878C5b5248E1b52b09Ab5cdEb2eD6e7Da58',
+  },
+  polygon: {
     antiSurveillance:   '0xfDdd2B1597c87577543176AB7f49D587876563D2',
     privacyGuarantees:  '0x8aceF0Bc7e07B2dE35E9069663953f41B5422218',
     missionEnforcement: '0x0E777878C5b5248E1b52b09Ab5cdEb2eD6e7Da58',
@@ -84,7 +89,8 @@ const PROTOCOL_CONTRACTS: Record<string, ProtocolContractSet> = {
 const CHAIN_RPC: Record<string, string> = {
   base:      'https://mainnet.base.org',
   avalanche: 'https://api.avax.network/ext/bc/C/rpc',
-  ethereum:  'https://eth.llamarpc.com',
+  arbitrum:  'https://arbitrum-one.publicnode.com',
+  polygon:   'https://polygon-bor-rpc.publicnode.com',
 };
 
 /* ------------------------------------------------------------------ */
@@ -606,7 +612,7 @@ export function formatTrustSummary(trust: TrustResult): string {
   const bondIcon    = trust.isBonded          ? '\u2714 Bonded'      : '\u2718 Unbonded';
   const partnerIcon = trust.partnershipBond   ? '\u2714 Active'      : '\u2718 None';
   const idIcon      = trust.erc8004Registered ? '\u2714 Registered'  : '\u2718 Unregistered';
-  const chainLabels: Record<string, string> = { base: 'Base', avalanche: 'Avalanche', ethereum: 'Ethereum' };
+  const chainLabels: Record<string, string> = { base: 'Base', avalanche: 'Avalanche', arbitrum: 'Arbitrum', polygon: 'Polygon' };
   const chainLabel = chainLabels[trust.chain] ?? trust.chain;
 
   const pc = trust.protocolCommitments;

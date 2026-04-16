@@ -35,21 +35,24 @@ import type { SupportedChain, BondTier, AgentBondType, TransactionData } from '@
 const CHAIN_RPC: Record<string, string> = {
   base:      'https://mainnet.base.org',
   avalanche: 'https://api.avax.network/ext/bc/C/rpc',
-  ethereum:  'https://eth.llamarpc.com',
+  arbitrum:  'https://arbitrum-one.publicnode.com',
+  polygon:   'https://polygon-bor-rpc.publicnode.com',
 };
 
 /** Chain IDs for EVM networks. */
 const CHAIN_IDS: Record<string, number> = {
   base:      8453,
   avalanche: 43114,
-  ethereum:  1,
+  arbitrum:  42161,
+  polygon:   137,
 };
 
 /** Block explorer URLs for transaction links. */
 const EXPLORER_URLS: Record<string, string> = {
   base:      'https://basescan.org/tx/',
   avalanche: 'https://snowtrace.io/tx/',
-  ethereum:  'https://etherscan.io/tx/',
+  arbitrum:  'https://arbiscan.io/tx/',
+  polygon:   'https://polygonscan.com/tx/',
 };
 
 /* ------------------------------------------------------------------ */

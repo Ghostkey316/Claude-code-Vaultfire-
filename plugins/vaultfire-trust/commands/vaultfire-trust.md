@@ -10,7 +10,7 @@ You are running the Vaultfire trust verification command. Follow these steps:
 
 Look for a `vaultfire.config.json` file in the current directory. If it exists, read it and extract:
 - `agentAddress`: The on-chain address to verify
-- `chain`: The blockchain network (`base`, `avalanche`, or `ethereum`)
+- `chain`: The blockchain network (`base`, `avalanche`, `arbitrum`, or `polygon`)
 - `blockOnFailure`: Whether to block on failed verification
 - `showOnStartup`: Whether to show the trust panel on startup
 - `demoMode`: Whether to show a pre-filled demo profile instead of live on-chain data
@@ -40,7 +40,7 @@ Present the trust verification status in a clear, formatted output:
   Accountability Bond:  [✔ Bonded / ✘ Unbonded]
   Partnership Bond:     [✔ Active / ✘ None]  (AIPartnershipBondsV2)
   ERC-8004 Identity:    [✔ Registered / ✘ Unregistered]
-  Chain:                [Base / Avalanche / Ethereum]
+  Chain:                [Base / Avalanche / Arbitrum / Polygon]
   Agent:                [agentAddress]
   VNS Name:             [vaultfire name, if registered]
   x402 Payments:        [✔ Enabled (EIP-712 · USDC) / ✘ Not configured]
@@ -62,7 +62,7 @@ Explain what each field means:
 - **Accountability Bond**: Whether the agent has staked an accountability bond
 - **Partnership Bond**: Whether the agent has an active AIPartnershipBondsV2 partnership bond with another agent or operator
 - **ERC-8004 Identity**: Whether the agent is registered under the on-chain AI identity standard
-- **Chain**: Which blockchain network the verification runs on (`base`, `avalanche`, or `ethereum`)
+- **Chain**: Which blockchain network the verification runs on (`base`, `avalanche`, `arbitrum`, or `polygon`)
 - **VNS Name**: The agent's Vaultfire Name Service name, if registered
 - **x402 Payments**: Whether the agent can sign EIP-712 USDC micropayments under the x402 standard. When `VAULTFIRE_AGENT_KEY` is set as an environment variable, the agent has full signing capability and the panel shows `✔ Enabled · signing active`. Without the key, a valid EVM address is still marked as x402-capable (read-only). Vaultfire provides the trust layer that makes agent-authorised payments safe.
 - **XMTP Identity**: Whether the agent can send and receive messages on the XMTP decentralised messaging network. When `VAULTFIRE_AGENT_KEY` is set, the agent has full messaging capability and the panel shows `✔ Reachable · messaging active`. Without the key, a read-only reachability check is performed against the XMTP API.

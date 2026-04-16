@@ -133,7 +133,7 @@ Indicates an active mutual accountability relationship via the `AIPartnershipBon
 Confirms the agent is registered under the ERC-8004 on-chain AI identity standard, providing a persistent, verifiable identity rather than an ephemeral session.
 
 **Chain & Agent Address**
-The blockchain network (`base`, `avalanche`, or `ethereum`) and the agent's cryptographic EVM address used for verification.
+The blockchain network (`base`, `avalanche`, `arbitrum`, or `polygon`) and the agent's cryptographic EVM address used for verification.
 
 **VNS Name**
 The human-readable Vaultfire Name Service identifier assigned to the agent, if registered.
