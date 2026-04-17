@@ -70,7 +70,7 @@ node --input-type=module -e \
   Street Cred:         55 / 95  (silver)
   Partnership Bond:    ✔ Active  ← LIVE on Base
   ERC-8004 Identity:   ✔ Registered  ← LIVE on Base
-  Accountability Bond: ✘ Not bonded  ← requires yield pool funding (v1.0)
+  Accountability Bond: ✘ Not bonded  ← LIVE on Base
   Chain:               Base
   Agent:               0xYourAgentAddress
 ────────────────────────────────────────
@@ -124,7 +124,7 @@ The overall trustworthiness rating (A–F) derived from the agent's on-chain his
 **Accountability Bond**
 Indicates whether the agent has a verified accountability bond on-chain. When the trust panel shows `✔ Bonded`, the agent holds an active `AIAccountabilityBondsV2` bond.
 
-> ⚠️ **Current status:** `AIAccountabilityBondsV2` is deployed and verified on Base (`0xf92baef9523BC264144F80F9c31D5c5C017c6Da8`) but requires a **10 ETH minimum yield pool balance** before any write functions activate. The yield pool is not yet funded. The trust panel will show `✘ Not bonded` for accountability bonds until this is funded. This is coming in v1.0.
+> ✅ **Current status:** `AIAccountabilityBondsV2` is deployed and verified on Base (`0x6750D28865434344e04e1D0a6044394b726C3dfE`) and is now **LIVE**. The yield pool is funded and operational.
 
 **Partnership Bond**
 Indicates an active mutual accountability relationship via the `AIPartnershipBondsV2` contract. An active partnership bond contributes a +5 bonus to the agent's reputation score.
@@ -197,10 +197,10 @@ With `VAULTFIRE_AGENT_KEY` set, the agent can autonomously create on-chain bonds
 
 **Accountability Bond** — a self-stake that guarantees responsible behaviour:
 
-> ⚠️ **NOT YET OPERATIONAL.** `AIAccountabilityBondsV2` requires a **10 ETH minimum yield pool balance** before `createBond` will execute without reverting. The yield pool is not yet funded. Calling `createAccountabilityBond` will cause your transaction to **revert and you will lose gas**. Do not call this until v1.0 is announced. Partnership bonds work fine today.
+> ✅ **LIVE.** `AIAccountabilityBondsV2` is funded and operational. `createAccountabilityBond` is active on Base.
 
 ```typescript
-// ⚠️ WILL REVERT until yield pool is funded (coming in v1.0)
+// ✅ LIVE — yield pool funded and operational
 import { createAccountabilityBond } from 'claude-code-vaultfire';
 
 const result = await createAccountabilityBond('base', 'bronze');
